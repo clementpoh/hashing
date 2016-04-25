@@ -1,0 +1,13 @@
+ass2
+tags
+*.o
+*.swp
+tmp.*
+*.log
+workshop/
+
+test/*.dot
+test/*.rev
+test/*.dfs
+test/*.kahn
+test/*.rand
