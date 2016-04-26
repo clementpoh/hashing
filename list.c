@@ -115,6 +115,14 @@ void *list_find(bool (*eq)(void *key, void *node), List list, void *key) {
             : list_find(eq, list->next, key);
 }
 
+void *list_find_MTF(bool (*eq)(void *key, void *node), List *list, void *key) {
+    void *data = list_del(eq, list, key);
+    if (data) {
+        list_prepend(list, data);
+    }
+    return data;
+}
+
 /* Removes and returns the element equal to key in list,
  * returns NULL if not found */
 void *list_del(bool (*eq)(void *key, void *node), List *list, void *key) {

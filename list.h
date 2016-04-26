@@ -57,6 +57,9 @@ bool list_insert_if(bool (*eq)(void *data, void *node), List *list, void *data);
 /* Returns a pointer to key in list, returns NULL if not found */
 void *list_find(bool (*eq)(void *key, void *node), List list, void *key);
 
+/* Returns a key in list and moves it to the head, NULL if not found */
+void *list_find_MTF(bool (*eq)(void *key, void *node), List *list, void *key);
+
 /* Removes and returns the element equal to key in list,
  * returns NULL if not found */
 void *list_del(bool (*eq)(void *key, void *node), List *list, void *key);

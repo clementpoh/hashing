@@ -5,10 +5,17 @@
 #include "list.h"
 #include "array.h"
 
-static HashTable new_hash(int size, Hash h1, Hash h2, Eq eq, Print print);
+static HT new_hash(unsigned int size, Hash h1, Hash h2, Eq eq, Print print);
 
-static HashTable new_hash(int size, Hash h1, Hash h2, Eq eq, Print print) {
-    HashTable ht = calloc(1, sizeof(*ht));
+/* Printing function used for open address hash tables */
+static void open_address_print(Print print, FILE *file, Bucket b);
+
+static Bucket double_find(HT ht, unsigned int hash, Elem e);
+
+static Bucket *double_next_empty(HT ht, unsigned int hash, Elem e);
+
+static HT new_hash(unsigned int size, Hash h1, Hash h2, Eq eq, Print print) {
+    HT ht = calloc(1, sizeof(*ht));
     assert(ht);
 
     ht->table = calloc(size, sizeof(*ht->table));
@@ -23,9 +30,9 @@ static HashTable new_hash(int size, Hash h1, Hash h2, Eq eq, Print print) {
     return ht;
 }
 
-// Create an empty hash table, using arrays for separate chaining
-HashTable new_hash_array(int size, Hash hash, Eq eq, Print print) {
-    HashTable ht = new_hash(size, hash, NULL, eq, print);
+/* Create an empty hash table, using arrays for separate chaining */
+HT new_hash_array(unsigned int size, Hash hash, Eq eq, Print print) {
+    HT ht = new_hash(size, hash, NULL, eq, print);
 
     ht->_insert = (bucket_insert_fn) array_insert;
     ht->_search = (bucket_search_fn) array_find;
@@ -34,9 +41,9 @@ HashTable new_hash_array(int size, Hash hash, Eq eq, Print print) {
     return ht;
 }
 
-// Create an empty hash table, using arrays for separate chaining
-HashTable new_hash_array_MTF(int size, Hash hash, Eq eq, Print print) {
-    HashTable ht = new_hash(size, hash, NULL, eq, print);
+/* Create an empty hash table, using arrays for separate chaining */
+HT new_hash_array_MTF(unsigned int size, Hash hash, Eq eq, Print print) {
+    HT ht = new_hash(size, hash, NULL, eq, print);
 
     ht->_insert = (bucket_insert_fn) array_insert_MTF;
     ht->_search = (bucket_search_fn) array_find_MTF;
@@ -45,8 +52,8 @@ HashTable new_hash_array_MTF(int size, Hash hash, Eq eq, Print print) {
     return ht;
 }
 
-HashTable new_hash_list(int size, Hash hash, Eq eq, Print print) {
-    HashTable ht = new_hash(size, hash, NULL, eq, print);
+HT new_hash_list(unsigned int size, Hash hash, Eq eq, Print print) {
+    HT ht = new_hash(size, hash, NULL, eq, print);
 
     ht->_insert = (bucket_insert_fn) list_insert;
     ht->_search = (bucket_search_fn) list_find;
@@ -55,27 +62,68 @@ HashTable new_hash_list(int size, Hash hash, Eq eq, Print print) {
     return ht;
 }
 
-HashTable new_hash_list_MTF(int size, Hash hash, Eq eq, Print print) {
-    HashTable ht = new_hash(size, hash, NULL, eq, print);
+HT new_hash_list_MTF(unsigned int size, Hash hash, Eq eq, Print print) {
+    HT ht = new_hash(size, hash, NULL, eq, print);
 
     ht->_insert = (bucket_insert_fn) list_prepend;
-    ht->_search = (bucket_search_fn) list_find;
+    ht->_search_MTF = (bucket_search_MTF_fn) list_find_MTF;
     ht->_print = (bucket_print_fn) list_fprint;
 
     return ht;
 }
 
-void hash_insert(HashTable ht, Elem e) {
-    int b = ht->hash1(e, ht->size, 0);
-    ht->_insert(&ht->table[b], e);
+/* Create an empty hash table with open addressing using double hashing */
+HT new_hash_double(unsigned int size, Hash h1, Hash h2, Eq eq, Print print) {
+    HT ht = new_hash(size, h1, h2, eq, print);
+
+    ht->_print = (bucket_print_fn) open_address_print;
+
+    return ht;
 }
 
-Elem hash_search(HashTable ht, Elem e) {
-    int b = ht->hash1(e, ht->size, 0);
-    return ht->_search(ht->eq, ht->table[b], e);
+HT new_hash_linear(unsigned int size, Hash hash, Eq eq, Print print) {
+    return new_hash_double(size, hash, linear_probe, eq, print);
 }
 
-void hash_print(HashTable ht, FILE *file) {
+static void open_address_print(Print print, FILE *file, Bucket b) {
+    print(file, b);
+}
+
+void hash_insert(HT ht, Elem e) {
+    unsigned int hash = ht->hash1(e, ht->size);
+
+    if (!ht->hash2) {
+        ht->_insert(&ht->table[hash], e);
+    } else {
+        Bucket *bucket = double_next_empty(ht, hash, e);
+        if (bucket)
+            *bucket = e;
+        else
+            fprintf(stderr, "Aborting insertion: table full\n");
+    }
+}
+
+Elem hash_search(HT ht, Elem e) {
+    assert(ht);
+    assert(ht->hash1);
+    assert(ht->eq);
+
+    unsigned int hash = ht->hash1(e, ht->size);
+
+    if (!ht->hash2) {
+        return ht->_search_MTF
+            ? ht->_search_MTF(ht->eq, &ht->table[hash], e)
+            : ht->_search(ht->eq, ht->table[hash], e);
+    } else {
+        return double_find(ht, hash, e);
+    }
+}
+
+void hash_print(HT ht, FILE *file) {
+    assert(ht);
+    assert(ht->_print);
+    assert(ht->print);
+
     fprintf(file, "size: %d\n", ht->size);
 
     for (int i = 0; i < ht->size; i++) {
@@ -83,4 +131,28 @@ void hash_print(HashTable ht, FILE *file) {
         ht->_print(ht->print, file, ht->table[i]);
         fprintf(file, "\n");
     }
+}
+
+static Bucket *double_next_empty(HT ht, unsigned int hash, Elem e) {
+    unsigned int h = hash;
+
+    int i = 0;
+    while (ht->table[h] && i <= ht->size) {
+        h = (hash + i * ht->hash2(e, ht->size)) % ht->size;
+        i++;
+    }
+
+    return i <= ht->size ? &ht->table[h] : NULL;
+}
+
+static Bucket double_find(HT ht, unsigned int hash, Elem e) {
+    unsigned int h = hash;
+
+    int i = 0;
+    while (!ht->eq(ht->table[h], e) && i <= ht->size) {
+        h = (hash + i * ht->hash2(e, ht->size)) % ht->size;
+        i++;
+    }
+
+    return i <= ht->size ? ht->table[h] : NULL;
 }
