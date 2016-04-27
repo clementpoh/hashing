@@ -5,15 +5,19 @@
 #include "list.h"
 #include "array.h"
 
+/* Create a new arbitrary hash table */
 static HT new_hash(unsigned int size, Hash h1, Hash h2, Eq eq, Print print);
 
 /* Printing function used for open address hash tables */
 static void open_address_print(Print print, FILE *file, Bucket b);
 
+/* Find e in ht, ht uses double hashing */
 static Bucket double_find(HT ht, unsigned int hash, Elem e);
 
+/* Find the next free slot in ht, ht uses double hashing */
 static Bucket *double_next_empty(HT ht, unsigned int hash, Elem e);
 
+/* Create a new arbitrary hash table */
 static HT new_hash(unsigned int size, Hash h1, Hash h2, Eq eq, Print print) {
     HT ht = calloc(1, sizeof(*ht));
     assert(ht);
@@ -30,7 +34,7 @@ static HT new_hash(unsigned int size, Hash h1, Hash h2, Eq eq, Print print) {
     return ht;
 }
 
-/* Create an empty hash table, using arrays for separate chaining */
+/* Create a new hash table, separate chaining with arrays */
 HT new_hash_array(unsigned int size, Hash hash, Eq eq, Print print) {
     HT ht = new_hash(size, hash, NULL, eq, print);
 
@@ -52,6 +56,7 @@ HT new_hash_array_MTF(unsigned int size, Hash hash, Eq eq, Print print) {
     return ht;
 }
 
+/* Create a hash table, separate chaining with linked lists */
 HT new_hash_list(unsigned int size, Hash hash, Eq eq, Print print) {
     HT ht = new_hash(size, hash, NULL, eq, print);
 
@@ -126,7 +131,7 @@ void hash_print(HT ht, FILE *file) {
 
     fprintf(file, "size: %d\n", ht->size);
 
-    for (int i = 0; i < ht->size; i++) {
+    for (unsigned int i = 0; i < ht->size; i++) {
         fprintf(file, "%d: ", i);
         ht->_print(ht->print, file, ht->table[i]);
         fprintf(file, "\n");
@@ -134,9 +139,8 @@ void hash_print(HT ht, FILE *file) {
 }
 
 static Bucket *double_next_empty(HT ht, unsigned int hash, Elem e) {
-    unsigned int h = hash;
+    unsigned int h = hash, i = 0;
 
-    int i = 0;
     while (ht->table[h] && i <= ht->size) {
         h = (hash + i * ht->hash2(e, ht->size)) % ht->size;
         i++;
@@ -146,9 +150,8 @@ static Bucket *double_next_empty(HT ht, unsigned int hash, Elem e) {
 }
 
 static Bucket double_find(HT ht, unsigned int hash, Elem e) {
-    unsigned int h = hash;
+    unsigned int h = hash, i = 0;
 
-    int i = 0;
     while (!ht->eq(ht->table[h], e) && i <= ht->size) {
         h = (hash + i * ht->hash2(e, ht->size)) % ht->size;
         i++;

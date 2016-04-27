@@ -20,15 +20,21 @@ typedef Elem (*bucket_search_fn)(Eq eq_fn, Bucket b, Elem e);
 typedef Elem (*bucket_search_MTF_fn)(Eq eq_fn, Bucket *b, Elem e);
 typedef void (*bucket_print_fn)(Print print, FILE *f, Bucket b);
 
+typedef enum {
+    LIST,
+    ARRAY,
+    LINEAR,
+    DOUBLE,
+} Collision;
+
 struct hash_table_t {
     /* Number of elements */
     unsigned int size;
 
     /* Mimicking parametric polymorphism in C */
-
-    /* hash function */
+    /* Hash function */
     Hash hash1;
-    /* second hash function for double hashing */
+    /* Second hash function for double hashing */
     Hash hash2;
 
     /* Functions to operate on individual elements */
@@ -40,10 +46,6 @@ struct hash_table_t {
     bucket_search_MTF_fn _search_MTF;
     bucket_insert_fn _insert;
     bucket_print_fn _print;
-
-    void (*table_insert)(HT ht, Elem e);
-    void (*table_search)(HT ht, Elem e);
-
 
     /* An array of buckets, either array of array_t* or list_t* */
     Bucket *table;
