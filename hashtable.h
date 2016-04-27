@@ -12,6 +12,7 @@ typedef struct hash_table_t *HT;
 typedef void *Bucket;
 
 typedef bool (*Eq)(Elem e1, Elem e2);
+typedef Elem (*Parse)(char *str);
 typedef void (*Print)(FILE *file, Elem e);
 
 /* Functions for the buckets */
@@ -39,6 +40,7 @@ struct hash_table_t {
 
     /* Functions to operate on individual elements */
     Eq eq;
+    Parse parse;
     Print print;
 
     /* Functions to operate on buckets for separate chaining */
@@ -49,33 +51,41 @@ struct hash_table_t {
 
     /* An array of buckets, either array of array_t* or list_t* */
     Bucket *table;
+
+    /* The following fields aren't strictly necessary */
+    Collision method;
+    bool MTF;
+
 };
 
 /* Create a new hash table, separate chaining with arrays */
-HT new_hash_array(unsigned int size, Hash hash, Eq eq, Print print);
+extern HT new_hash_array(unsigned int size, Hash hash, Eq eq, Parse parse, Print print);
 
 /* Create a new hash table, separate chaining with arrays and move-to-front */
-HT new_hash_array_MTF(unsigned int size, Hash hash, Eq eq, Print print);
+extern HT new_hash_array_MTF(unsigned int size, Hash hash, Eq eq, Parse parse, Print print);
 
 /* Create a hash table, separate chaining with linked lists */
-HT new_hash_list(unsigned int size, Hash hash, Eq eq, Print print);
+extern HT new_hash_list(unsigned int size, Hash hash, Eq eq, Parse parse, Print print);
 
 /* Create a hash table, separate chaining with linked and move-to-front */
-HT new_hash_list_MTF(unsigned int size, Hash hash, Eq eq, Print print);
+extern HT new_hash_list_MTF(unsigned int size, Hash hash, Eq eq, Parse parse, Print print);
 
 /* Create a  hash table with open addressing using linear probing */
-HT new_hash_linear(unsigned int size, Hash hash, Eq eq, Print print);
+extern HT new_hash_linear(unsigned int size, Hash hash, Eq eq, Parse parse, Print print);
 
 /* Create a  hash table with open addressing using double hashing */
-HT new_hash_double(unsigned int size, Hash h1, Hash h2, Eq eq, Print print);
+extern HT new_hash_double(unsigned int size, Hash h1, Hash h2, Eq eq, Parse parse, Print print);
 
 /* Search table for e and return its pointer if found, else NULL */
-Elem hash_search(HT ht, Elem e);
+extern Elem hash_search(HT ht, Elem e);
 
 /* insert element into table */
-void hash_insert(HT ht, Elem e);
+extern void hash_insert(HT ht, Elem e);
 
 /* print the whole table */
-void hash_print(HT ht, FILE *file);
+extern void hash_print(HT ht, FILE *file);
+
+/* Parse data into ht from file */
+extern void hash_parse(HT ht, FILE *file);
 
 #endif

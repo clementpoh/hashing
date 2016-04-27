@@ -5,8 +5,10 @@
 #include "list.h"
 #include "array.h"
 
+#define MAX_LINE_LEN 258
+
 /* Create a new arbitrary hash table */
-static HT new_hash(unsigned int size, Hash h1, Hash h2, Eq eq, Print print);
+static HT new_hash(unsigned int size, Hash h1, Hash h2, Eq eq, Parse parse, Print print);
 
 /* Printing function used for open address hash tables */
 static void open_address_print(Print print, FILE *file, Bucket b);
@@ -18,7 +20,8 @@ static Bucket double_find(HT ht, unsigned int hash, Elem e);
 static Bucket *double_next_empty(HT ht, unsigned int hash, Elem e);
 
 /* Create a new arbitrary hash table */
-static HT new_hash(unsigned int size, Hash h1, Hash h2, Eq eq, Print print) {
+static HT
+new_hash(unsigned int size, Hash h1, Hash h2, Eq eq, Parse parse, Print print) {
     HT ht = calloc(1, sizeof(*ht));
     assert(ht);
 
@@ -29,65 +32,77 @@ static HT new_hash(unsigned int size, Hash h1, Hash h2, Eq eq, Print print) {
     ht->hash1 = h1;
     ht->hash2 = h2;
     ht->eq = eq;
+    ht->parse = parse;
     ht->print = print;
 
     return ht;
 }
 
 /* Create a new hash table, separate chaining with arrays */
-HT new_hash_array(unsigned int size, Hash hash, Eq eq, Print print) {
-    HT ht = new_hash(size, hash, NULL, eq, print);
+HT new_hash_array(unsigned int size, Hash hash, Eq eq, Parse parse, Print print) {
+    HT ht = new_hash(size, hash, NULL, eq, parse, print);
 
     ht->_insert = (bucket_insert_fn) array_insert;
     ht->_search = (bucket_search_fn) array_find;
     ht->_print = (bucket_print_fn) array_fprint;
 
+    ht->method = ARRAY;
+
     return ht;
 }
 
 /* Create an empty hash table, using arrays for separate chaining */
-HT new_hash_array_MTF(unsigned int size, Hash hash, Eq eq, Print print) {
-    HT ht = new_hash(size, hash, NULL, eq, print);
+HT new_hash_array_MTF(unsigned int size, Hash hash, Eq eq, Parse parse, Print print) {
+    HT ht = new_hash(size, hash, NULL, eq, parse, print);
 
     ht->_insert = (bucket_insert_fn) array_insert_MTF;
     ht->_search = (bucket_search_fn) array_find_MTF;
     ht->_print = (bucket_print_fn) array_fprint;
 
+    ht->method = ARRAY;
+    ht->MTF = true;
+
     return ht;
 }
 
 /* Create a hash table, separate chaining with linked lists */
-HT new_hash_list(unsigned int size, Hash hash, Eq eq, Print print) {
-    HT ht = new_hash(size, hash, NULL, eq, print);
+HT new_hash_list(unsigned int size, Hash hash, Eq eq, Parse parse, Print print) {
+    HT ht = new_hash(size, hash, NULL, eq, parse, print);
 
     ht->_insert = (bucket_insert_fn) list_insert;
     ht->_search = (bucket_search_fn) list_find;
     ht->_print = (bucket_print_fn) list_fprint;
 
+    ht->method = LIST;
+
     return ht;
 }
 
-HT new_hash_list_MTF(unsigned int size, Hash hash, Eq eq, Print print) {
-    HT ht = new_hash(size, hash, NULL, eq, print);
+HT new_hash_list_MTF(unsigned int size, Hash hash, Eq eq, Parse parse, Print print) {
+    HT ht = new_hash(size, hash, NULL, eq, parse, print);
 
     ht->_insert = (bucket_insert_fn) list_prepend;
     ht->_search_MTF = (bucket_search_MTF_fn) list_find_MTF;
     ht->_print = (bucket_print_fn) list_fprint;
 
+    ht->method = LIST;
+    ht->MTF = true;
+
     return ht;
 }
 
 /* Create an empty hash table with open addressing using double hashing */
-HT new_hash_double(unsigned int size, Hash h1, Hash h2, Eq eq, Print print) {
-    HT ht = new_hash(size, h1, h2, eq, print);
+HT new_hash_double(unsigned int size, Hash h1, Hash h2, Eq eq, Parse parse, Print print) {
+    HT ht = new_hash(size, h1, h2, eq, parse, print);
 
     ht->_print = (bucket_print_fn) open_address_print;
+    ht->method = DOUBLE;
 
     return ht;
 }
 
-HT new_hash_linear(unsigned int size, Hash hash, Eq eq, Print print) {
-    return new_hash_double(size, hash, linear_probe, eq, print);
+HT new_hash_linear(unsigned int size, Hash hash, Eq eq, Parse parse, Print print) {
+    return new_hash_double(size, hash, linear_probe, eq, parse, print);
 }
 
 static void open_address_print(Print print, FILE *file, Bucket b) {
@@ -129,6 +144,17 @@ void hash_print(HT ht, FILE *file) {
     assert(ht->_print);
     assert(ht->print);
 
+    char *m;
+    switch (ht->method) {
+        case ARRAY: m = "Chaining Array"; break;
+        case LIST: m = "Chaining List"; break;
+        case DOUBLE: m = "Double hashing"; break;
+        case LINEAR: m = "Linear probing"; break;
+        default: m = "Unknown";
+    }
+
+    fprintf(file, "Collision resolution: %s\n", m);
+    fprintf(file, "Move to front: %d\n", ht->MTF);
     fprintf(file, "size: %d\n", ht->size);
 
     for (unsigned int i = 0; i < ht->size; i++) {
@@ -136,6 +162,17 @@ void hash_print(HT ht, FILE *file) {
         ht->_print(ht->print, file, ht->table[i]);
         fprintf(file, "\n");
     }
+}
+
+void hash_parse(HT ht, FILE *file) {
+    char buffer[MAX_LINE_LEN];
+
+    while (fgets(buffer, MAX_LINE_LEN, file) != NULL) {
+        Elem e = ht->parse(buffer);
+        hash_insert(ht, e);
+    }
+
+    fclose(file);
 }
 
 static Bucket *double_next_empty(HT ht, unsigned int hash, Elem e) {

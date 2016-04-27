@@ -4,11 +4,14 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+/* Returns whether n1 is equal to n2 */
+bool int_eq(long n1, long n2);
+
 /* Prints n to file */
 void int_print(FILE *file, long n);
 
-/* Returns whether n1 is equal to n2 */
-bool int_eq(long n1, long n2);
+/* Returns a copy of str */
+char *str_parse(char *str);
 
 /* Prints str to file */
 void str_print(FILE *file, char *str);

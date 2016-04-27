@@ -6,6 +6,7 @@ tmp.*
 *.log
 workshop/
 
+test/*.in
 test/*.dot
 test/*.rev
 test/*.dfs

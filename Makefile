@@ -20,7 +20,7 @@ CC      = gcc
 #  -O0 to turn off optimisations
 #  -g  to include debugging symbols
 #  -pg for profiling
-CFLAGS  = -Wall -Wextra -Wpedantic -ansi -std=c99 -m32 -g -O0
+CFLAGS  = -Wall -Wextra -Wpedantic -ansi -std=c99 -g -O0
 
 # Define any libraries to be linked
 LIB		= -lcrypto
