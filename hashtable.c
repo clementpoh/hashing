@@ -5,7 +5,7 @@
 #include "list.h"
 #include "array.h"
 
-#define MAX_LINE_LEN 258
+#define MAX_LINE_LEN 256
 
 /* Create a new arbitrary hash table */
 static HT new_hash(unsigned int size, Hash h1, Hash h2, Eq eq, Parse parse, Print print);
@@ -109,6 +109,15 @@ static void open_address_print(Print print, FILE *file, Bucket b) {
     print(file, b);
 }
 
+void hash_load(HT ht, FILE *file) {
+    char buffer[MAX_LINE_LEN];
+
+    while (fgets(buffer, MAX_LINE_LEN, file) != NULL) {
+        Elem e = ht->parse(buffer);
+        hash_insert(ht, e);
+    }
+}
+
 void hash_insert(HT ht, Elem e) {
     unsigned int hash = ht->hash1(e, ht->size);
 
@@ -139,6 +148,21 @@ Elem hash_search(HT ht, Elem e) {
     }
 }
 
+void hash_search_file(HT ht, FILE *file) {
+    char buffer[MAX_LINE_LEN];
+
+    while (fgets(buffer, MAX_LINE_LEN, file) != NULL) {
+        Elem k = ht->parse(buffer);
+        Elem v = hash_search(ht, k);
+
+        printf("Looking for:");
+        ht->print(stdout, k);
+        puts("");
+        
+        printf("Found: %d in %d\n", v != NULL, ht->hash1(k, ht->size));
+    }
+}
+
 void hash_print(HT ht, FILE *file) {
     assert(ht);
     assert(ht->_print);
@@ -146,11 +170,11 @@ void hash_print(HT ht, FILE *file) {
 
     char *m;
     switch (ht->method) {
-        case ARRAY: m = "Chaining Array"; break;
-        case LIST: m = "Chaining List"; break;
-        case DOUBLE: m = "Double hashing"; break;
-        case LINEAR: m = "Linear probing"; break;
-        default: m = "Unknown";
+        case ARRAY:     m = "Chaining Array"; break;
+        case LIST:      m = "Chaining List"; break;
+        case DOUBLE:    m = "Double hashing"; break;
+        case LINEAR:    m = "Linear probing"; break;
+        default:        m = "Unknown";
     }
 
     fprintf(file, "Collision resolution: %s\n", m);
@@ -162,17 +186,6 @@ void hash_print(HT ht, FILE *file) {
         ht->_print(ht->print, file, ht->table[i]);
         fprintf(file, "\n");
     }
-}
-
-void hash_parse(HT ht, FILE *file) {
-    char buffer[MAX_LINE_LEN];
-
-    while (fgets(buffer, MAX_LINE_LEN, file) != NULL) {
-        Elem e = ht->parse(buffer);
-        hash_insert(ht, e);
-    }
-
-    fclose(file);
 }
 
 static Bucket *double_next_empty(HT ht, unsigned int hash, Elem e) {

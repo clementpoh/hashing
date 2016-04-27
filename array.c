@@ -12,7 +12,7 @@
 #include <assert.h>
 #include "array.h"
 
-// create empty array
+/* Create an empty array */
 array_t *array_create(void) {
     array_t *A = malloc(sizeof(array_t));
     assert(A != NULL);
@@ -35,7 +35,7 @@ void move_to_front(array_t *A, int pos) {
     A->vals[0] = head;
 }
 
-// add v to A
+/* Add v to A */
 void array_insert(array_t **A, void *v) {
     if (!*A)
         (*A) = array_create();
@@ -74,7 +74,7 @@ void *array_find_MTF(bool (*eq)(void *, void *), array_t *A, void *v) {
             break;
     }
 
-    // Could not find v in A
+    /* Could not find v in A */
     if (i == A->size) {
         return NULL;
     } else if (i > 0) {

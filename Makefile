@@ -23,7 +23,7 @@ CC      = gcc
 CFLAGS  = -Wall -Wextra -Wpedantic -ansi -std=c99 -g -O0
 
 # Define any libraries to be linked
-LIB		= -lcrypto
+LIB		= -lcrypto -lm
 
 # Define the source, header and object files
 HDR		= array.h list.h hashtable.h hash.h types.h primes.h
@@ -53,5 +53,8 @@ usage: $(TARGET)
 
 tags:
 	ctags -w $(SRC)
+
+test: $(TARGET)
+	./ass2 c -h 1 -t s test/str.in -f test/not.in -p
 
 $(OBJ): $(HDR)

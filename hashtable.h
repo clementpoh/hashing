@@ -11,6 +11,7 @@
 typedef struct hash_table_t *HT;
 typedef void *Bucket;
 
+/* Functions to operate on individual table elements */
 typedef bool (*Eq)(Elem e1, Elem e2);
 typedef Elem (*Parse)(char *str);
 typedef void (*Print)(FILE *file, Elem e);
@@ -76,16 +77,19 @@ extern HT new_hash_linear(unsigned int size, Hash hash, Eq eq, Parse parse, Prin
 /* Create a  hash table with open addressing using double hashing */
 extern HT new_hash_double(unsigned int size, Hash h1, Hash h2, Eq eq, Parse parse, Print print);
 
+/* Load data into ht from file */
+extern void hash_load(HT ht, FILE *file);
+
+/* Search ht for each elem in file */
+extern void hash_search_file(HT ht, FILE *file);
+
+/* print the whole table */
+extern void hash_print(HT ht, FILE *file);
+
 /* Search table for e and return its pointer if found, else NULL */
 extern Elem hash_search(HT ht, Elem e);
 
 /* insert element into table */
 extern void hash_insert(HT ht, Elem e);
-
-/* print the whole table */
-extern void hash_print(HT ht, FILE *file);
-
-/* Parse data into ht from file */
-extern void hash_parse(HT ht, FILE *file);
 
 #endif

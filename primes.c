@@ -1,8 +1,5 @@
 #include "primes.h"
 
-
-#include <stdio.h> // TODO: REMOVE ME
-
 #include <stdbool.h>
 
 static bool is_prime(int n);

@@ -9,11 +9,11 @@ typedef unsigned int (*Hash)(Elem e, unsigned int size);
 
 unsigned int worst_hash(Elem e, unsigned int size);
 
-unsigned int bad_hash(Elem e, unsigned int size);
+unsigned int bad_hash(char *key, unsigned int size);
 
-unsigned int basic_hash(Elem e, unsigned int size);
+unsigned int basic_hash(long n, unsigned int size);
 
-unsigned int universal_hash(Elem e, unsigned int size);
+unsigned int universal_hash(char *key, unsigned int size);
 
 unsigned int linear_probe(Elem e, unsigned int size);
 #endif
