@@ -1,3 +1,12 @@
+/*
+ * COMP20007 Design of Algorithms
+ * Semester 1 2016
+ *
+ * Clement Poh (cpoh@unimelb.edu.au)
+ *
+ * This module is for the implementation of tasks specific to assignment 2
+ *
+*/
 #include "extra.h"
 #include "hash.h"
 

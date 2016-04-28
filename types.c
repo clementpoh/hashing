@@ -1,3 +1,13 @@
+/*
+ * COMP20007 Design of Algorithms
+ * Semester 1 2016
+ *
+ * Clement Poh (cpoh@unimelb.edu.au)
+ *
+ * This module provides fundamental functionality used to
+ * interpret generic pointers into typed data.
+ *
+*/
 #include "types.h"
 
 #include <string.h>
