@@ -1,3 +1,12 @@
+/*
+ * COMP20007 Design of Algorithms
+ * Semester 1 2016
+ *
+ * Clement Poh (cpoh@unimelb.edu.au)
+ *
+ * This provides all the functionality related to hash tables.
+ *
+*/
 #include <stdlib.h>
 #include <assert.h>
 

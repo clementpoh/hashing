@@ -7,10 +7,10 @@
  * This module is for the implementation of tasks specific to assignment 2
  *
 */
-#ifndef PRIMES_H
-#define PRIMES_H
+#ifndef EXTRA_H
+#define EXTRA_H
 
-/* Determine appropriate size of hash table */
+/* Determine appropriate size of a hash table given input size n */
 unsigned int determine_size(unsigned int n);
 
 /* Print n strings that are hashed to 0 by universal_hash seeded with seed */

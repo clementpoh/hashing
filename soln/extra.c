@@ -18,7 +18,7 @@ static unsigned int next_prime(unsigned int n);
 /* Determine whether n is prime. */
 static bool is_prime(int n);
 
-/* Determine appropriate size of hash table */
+/* Determine appropriate size of a hash table given input size n */
 unsigned int determine_size(unsigned int n) {
     return next_prime(2 * n + 1);
 }

@@ -4,15 +4,12 @@
  *
  * Clement Poh (cpoh@unimelb.edu.au)
  *
- * This provides all the functionality related to hash tables.
+ * This module provides the functionality related to hash functions.
  *
 */
 #include "hash.h"
 
 #include <stdlib.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <math.h>
 
 #define MAXSTRLEN 256
 
@@ -47,7 +44,7 @@ unsigned int bad_hash(char *key, unsigned int size) {
     return c * key[0] % size;
 }
 
-/* Universal hash function as described in Dasgupta et. al 1.5.2 */
+/* Universal hash function as described in Dasgupta et al 1.5.2 */
 unsigned int universal_hash(unsigned char *key, unsigned int size) {
     static int cs[MAXSTRLEN];
 

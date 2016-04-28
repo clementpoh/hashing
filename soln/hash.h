@@ -4,7 +4,7 @@
  *
  * Clement Poh (cpoh@unimelb.edu.au)
  *
- * This provides all the functionality related to hash tables.
+ * This module provides the functionality related to hash functions.
  *
 */
 #ifndef HASH_H
