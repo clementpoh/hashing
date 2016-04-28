@@ -55,6 +55,9 @@ tags:
 	ctags -w $(SRC)
 
 test: $(TARGET)
-	./ass2 c -h 1 -t s test/str.in -f test/not.in -p
+	./ass2 c -h 3 -t s test/str.in -f test/not.in -p
+
+collisions: $(TARGET)
+	./ass2 c -h 3 -t s -c 1 test/str.in
 
 $(OBJ): $(HDR)

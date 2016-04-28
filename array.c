@@ -96,6 +96,9 @@ void array_delete(bool (*eq)(void *, void *), array_t *A, void *v) {
     for (int j = i + 1; j < A->size; j++) {
         A->vals[j - 1] = A->vals[j];
     }
+
+    A->size -= 1;
+    A->vals = realloc(A->vals, sizeof(A->vals) * A->size);
 }
 
 void array_fprint(void (*print)(FILE *f, void *data), FILE *f, array_t *A) {

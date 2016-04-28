@@ -13,7 +13,12 @@ unsigned int bad_hash(char *key, unsigned int size);
 
 unsigned int basic_hash(long n, unsigned int size);
 
-unsigned int universal_hash(char *key, unsigned int size);
+unsigned int univ_hash(char *key, unsigned int size);
 
 unsigned int linear_probe(Elem e, unsigned int size);
+
+void collide_dumb(unsigned int size, unsigned int seed);
+
+void collide_clever(unsigned int size, unsigned int seed);
+
 #endif

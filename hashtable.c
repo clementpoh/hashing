@@ -157,9 +157,9 @@ void hash_search_file(HT ht, FILE *file) {
 
         printf("Looking for:");
         ht->print(stdout, k);
-        puts("");
-        
-        printf("Found: %d in %d\n", v != NULL, ht->hash1(k, ht->size));
+
+        printf(", starting in %d, %s\n"
+                ,ht->hash1(k, ht->size), !v ? "not found" : "found");
     }
 }
 
@@ -202,7 +202,7 @@ static Bucket *double_next_empty(HT ht, unsigned int hash, Elem e) {
 static Bucket double_find(HT ht, unsigned int hash, Elem e) {
     unsigned int h = hash, i = 0;
 
-    while (!ht->eq(ht->table[h], e) && i <= ht->size) {
+    while (!ht->eq(ht->table[h], e) && ht->table[h] && i <= ht->size) {
         h = (hash + i * ht->hash2(e, ht->size)) % ht->size;
         i++;
     }

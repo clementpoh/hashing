@@ -17,7 +17,7 @@ typedef Elem (*Parse)(char *str);
 typedef void (*Print)(FILE *file, Elem e);
 
 /* Functions for the buckets */
-typedef void (*bucket_insert_fn)(Bucket *b, Elem e);
+typedef Elem (*bucket_insert_fn)(Bucket *b, Elem e);
 typedef Elem (*bucket_search_fn)(Eq eq_fn, Bucket b, Elem e);
 typedef Elem (*bucket_search_MTF_fn)(Eq eq_fn, Bucket *b, Elem e);
 typedef void (*bucket_print_fn)(Print print, FILE *f, Bucket b);
@@ -27,7 +27,7 @@ typedef enum {
     ARRAY,
     LINEAR,
     DOUBLE,
-} Collision;
+} Chain;
 
 struct hash_table_t {
     /* Number of elements */
@@ -54,7 +54,7 @@ struct hash_table_t {
     Bucket *table;
 
     /* The following fields aren't strictly necessary */
-    Collision method;
+    Chain method;
     bool MTF;
 
 };

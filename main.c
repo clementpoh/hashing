@@ -17,11 +17,12 @@ typedef struct {
     char *find;
     Hash hash;
     unsigned int size;
-    Collision method;
+    Chain method;
     int seed;
     bool MTF;
     bool string;
     bool print;
+    void (*coll)(unsigned int, unsigned int);
 } Options;
 
 /* Print usage message and exit */
@@ -44,13 +45,20 @@ static void usage_exit(char *bin) {
     fprintf(stderr, "  l        Open addressing with linear probing\n");
     fprintf(stderr, "insert.in  File containing values to be inserted\n");
     fprintf(stderr, "\nOptions:\n");
-    fprintf(stderr, "  -f find  File containing values to be searched\n");
+    fprintf(stderr, "  -f file  File containing values to be searched\n");
     fprintf(stderr, "  -m       Move-to-front for separate chaining\n");
-    fprintf(stderr, "  -s seed  Random seed\n");
-    fprintf(stderr, "  -h hash  hash function\n");
-    fprintf(stderr, "  -n size  Expected input size\n");
+    fprintf(stderr, "  -s seed  Random seed [default: 0]\n");
     fprintf(stderr, "  -t s     Expect strings as input\n");
     fprintf(stderr, "  -p       Print the hash table to stdout\n");
+    fprintf(stderr, "  -n size  Expected input size [default: 11]\n");
+    fprintf(stderr, "Hash functions:\n");
+    fprintf(stderr, "  -h 0     hash with: worst_hash [default]\n");
+    fprintf(stderr, "  -h 1     hash with: bad_hash, for strings\n");
+    fprintf(stderr, "  -h 2     hash with: basic_hash, for ints\n");
+    fprintf(stderr, "  -h 3     hash with: univ_hash, for strings\n");
+    fprintf(stderr, "Generate universal hash collisions:\n");
+    fprintf(stderr, "  -c 1     hash collisions with dumb_collisions\n");
+    fprintf(stderr, "  -c 2     hash collisions with clever_collisions\n");
 
     exit(EXIT_FAILURE);
 }
@@ -64,34 +72,30 @@ static Options load_options(int argc, char *argv[]) {
         .bin    = argv[0],
         .size   = DEFAULT_BUCKETS,
         .insert = NULL,
-        .find = NULL,
+        .find   = NULL,
         .method = LIST,
         .MTF    = false,
         .string = false,
         .seed   = 0,
         .hash   = worst_hash,
         .print  = false,
+        .coll   = NULL,
     };
 
-    while ((c = getopt(argc, argv, "f:h:mn:ps:t:")) != -1) {
+    while ((c = getopt(argc, argv, "c:f:h:mn:ps:t:")) != -1) {
         switch (c) {
             case 'h':
                 switch (atoi(optarg)) {
-                    case 1:
-                        opts.hash = (Hash) bad_hash;
-                        printf("Hashing: Bad hash\n");
-                        break;
-                    case 2:
-                        opts.hash = (Hash) basic_hash;
-                        printf("Hashing: Basic hash\n");
-                        break;
-                    case 3: opts.hash = (Hash) universal_hash;
-                        printf("Hashing: Universal hash\n");
-                        break;
-                    case 0:
-                    default:
-                        opts.hash = (Hash) worst_hash;
-                        printf("Hashing: Worst hash\n");
+                    case 1: opts.hash = (Hash) bad_hash;     break;
+                    case 2: opts.hash = (Hash) basic_hash;   break;
+                    case 3: opts.hash = (Hash) univ_hash;    break;
+                    default: opts.hash = (Hash) worst_hash;
+                } break;
+            case 'c':
+                switch (atoi(optarg)) {
+                    case 1: opts.coll = collide_dumb;   break;
+                    case 2: opts.coll = collide_clever; break;
+                    default: usage_exit(opts.bin);
                 } break;
             case 'f': opts.find = optarg;       break;
             case 'm': opts.MTF = true;          break;
@@ -113,6 +117,11 @@ static Options load_options(int argc, char *argv[]) {
     if (optind + 2 > argc) {
         fprintf(stderr, "Missing input keys\n");
         usage_exit(opts.bin);
+    }
+
+    if (opts.coll && opts.hash != (Hash) univ_hash) {
+        fprintf(stderr, "-c: changing hash to universal hash\n");
+        opts.hash = (Hash) univ_hash;
     }
 
     switch (argv[optind][0]) {
@@ -145,6 +154,9 @@ int main(int argc, char *argv[]) {
         fclose(find);
     }
 
+    if (opts.coll)
+        opts.coll(ht->size, opts.seed);
+
     if (opts.print)
         hash_print(ht, stdout);
 
@@ -172,6 +184,7 @@ static HT create_table(Options opts) {
                 : new_hash_list(size, opts.hash, eq, parse, print);
             break;
         case DOUBLE:
+            /* No way to choose the the second hash function */
             ht = new_hash_double(size, opts.hash, opts.hash, eq, parse, print);
             break;
         case LINEAR:
