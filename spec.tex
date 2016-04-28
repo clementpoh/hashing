@@ -117,10 +117,11 @@ of hash functions from Dasgupta 1.5.2.
     \item[Code size:]
         The existing code simply makes the hash table the same size as the command-line argument ``size''.
         Now assume that the command-line input is the maximum expected number of elements,
-        and write some code to choose a hash table {\tt size} equal to the next
-        prime after {\tt 2*size}.  If you like, you can reuse the code at {\tt
-        http://people.eng.unimelb.edu.au/ammoffat/ppsaa/c/isprime.c}, with
-        proper attribution of course.
+        implement {\tt determine\_size} in {\tt extra.c} to choose a hash table {\tt size}
+        equal to the next prime after {\tt 2*size}.
+        If you like, you can reuse the code at
+        {\tt http://people.eng.unimelb.edu.au/ammoffat/ppsaa/c/isprime.c},
+        with proper attribution of course.
 \end{description}
 
 \section*{Linear probing with double hashing}
@@ -130,9 +131,10 @@ double hashing approach against the separate chaining collision resolution
 methods.
 
 \begin{description}
-    \item[Linear probing:] The hash table of the assignment also implements
-        double hashing. Implement the function {\tt linear\_probing} in {\tt
-        hash.c} so when it's used as the second hash function of a double
+    \item[Linear probing:]
+        The hash table of the assignment also implements double hashing.
+        Implement the function {\tt linear\_probing} in {\tt hash.c}
+        so when it's used as the second hash function of a double
         hashing hash table it performs linear probing as its collision
         resolution method.
 \end{description}
@@ -158,9 +160,9 @@ random-looking integers.
    }
 \end{verbatim}
 
-(If you're curious, there's more detail at {\tt
-http://www.gnu.org/software/libc/manual/html\_node/ISO-Random.html}, but the
-example should be all you need for this project.)
+(If you're curious, there's more detail at
+{\tt http://www.gnu.org/software/libc/manual/html\_node/ISO-Random.html},
+but the example should be all you need for this project.)
 
 \section*{Implementing and testing the hash table} You can see we've added a
 command-line argument {\tt -s seed} to main.
@@ -185,6 +187,8 @@ bad_hash(Key k, unsigned int size) {
     return a * key[0] % size;
 }
 \end{verbatim}
+
+        A stub for {\tt bad\_hash} resides in {\tt hash.c}, complete it.
 
 \end{description}
 

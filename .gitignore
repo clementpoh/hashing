@@ -4,6 +4,7 @@ tags
 *.swp
 tmp.*
 *.log
+spec.pdf
 workshop/
 
 test/*.in
