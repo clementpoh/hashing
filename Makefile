@@ -55,10 +55,10 @@ tags:
 	ctags -w $(SRC)
 
 test: $(TARGET)
-	./ass2 c -h 3 -m -t s test/str.in -f test/not.in -p
+	./ass2 -h 3 -m -t s test/str.in -f test/not.in -p
 
 collide: $(TARGET)
-	./ass2 c -h 3 -t s -c 1 test/str.in
+	./ass2 -h 3 -t s -c 1 test/str.in
 
 spec.pdf: spec.tex
 	pdflatex spec.tex && rm spec.log spec.aux

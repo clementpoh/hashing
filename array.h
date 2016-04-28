@@ -1,10 +1,9 @@
 /*
 ** COMP200007 Design of Algorithms
-** Data structure to store an array of (key, void *) pairs, but
-** stores them in separate arrays, first vals then ptrs.
+** Data structure to store an array of (void *)
 **
 ** Author: Andrew Turpin
-** Wed  8 May 2013 19:21:49 EST
+** Adapted and updated by Clement Poh
 */
 #ifndef ARRAY_H
 #define ARRAY_H

@@ -2,13 +2,13 @@
 ** COMP200007 Design of Algorithms
 ** Data structure to store an array of (void *)
 **
-** Author: Clement Poh
-** Adapted from code by Andrew Turpin
+** Author: Andrew Turpin
+** Adapted and updated by Clement Poh
 */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
+
 #include "array.h"
 
 /* Move value at pos to front of array */
@@ -58,10 +58,10 @@ void array_insert_MTF(array_t **A, void *v) {
 
 /* Returns a pointer to a value eq to v in A, NULL otherwise */
 void *array_find(bool (*eq)(void *v, void *d), array_t *A, void *v) {
-    assert(A != NULL);
-    int i = 0;
+    if (!A)
+        return NULL;
 
-    for (i = 0; i < A->size; i++) {
+    for (int i = 0; i < A->size; i++) {
         if (eq(v, A->vals[i]))
             return A->vals[i];
     }
@@ -71,9 +71,10 @@ void *array_find(bool (*eq)(void *v, void *d), array_t *A, void *v) {
 
 /* Returns a pointer to a value eq to v in A, and moves it to the front */
 void *array_find_MTF(bool (*eq)(void *v, void *d), array_t *A, void *v) {
-    assert(A != NULL);
-    int i = 0;
+    if (!A)
+        return NULL;
 
+    int i = 0;
     for (i = 0; i < A->size; i++) {
         if (eq(v, A->vals[i]))
             break;
@@ -91,9 +92,10 @@ void *array_find_MTF(bool (*eq)(void *v, void *d), array_t *A, void *v) {
 
 /* Delete v from A */
 void array_delete(bool (*eq)(void *v, void *d), array_t *A, void *v) {
-    assert(A != NULL);
-    int i = 0;
+    if (!A)
+        return;
 
+    int i = 0;
     for (i = 0 ; i < A->size; i++) {
         if (eq(v, A->vals[i]))
             break;

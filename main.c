@@ -1,14 +1,24 @@
+/*
+ * COMP20007 Design of Algorithms
+ * Semester 1 2016
+ * Assignment 2 driver
+ *
+ * Clement Poh (cpoh@unimelb.edu.au)
+ *
+ * This module processes and runs the program.
+ *
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <getopt.h>
 #include <assert.h>
 
 #include "extra.h"
-#include "hash.h"
 #include "types.h"
 #include "hashtable.h"
 
 #define DEFAULT_SIZE 11
+#define NUM_COLLISIONS 5
 
 /* Store the configuration options from the command line */
 typedef struct {
@@ -22,7 +32,7 @@ typedef struct {
     bool MTF;
     bool string;
     bool print;
-    void (*coll)(unsigned int, unsigned int);
+    void (*coll)(unsigned int, unsigned int, int);
 } Options;
 
 /* Print usage message and exit */
@@ -38,19 +48,20 @@ static FILE *safe_open(char *filename, const char *mode);
 
 /* Print usage message and exit */
 static void usage_exit(char *bin) {
-    fprintf(stderr, "%s (a | c | d | l) [options] <insert.in>\n", bin);
-    fprintf(stderr, "  a        Separate chaining with an array\n");
-    fprintf(stderr, "  c        Separate chaining with a linked list\n");
-    fprintf(stderr, "  d        Open addressing with double hashing\n");
-    fprintf(stderr, "  l        Open addressing with linear probing\n");
+    fprintf(stderr, "%s [options] <insert.in>\n", bin);
     fprintf(stderr, "insert.in  File containing values to be inserted\n");
     fprintf(stderr, "\nOptions:\n");
-    fprintf(stderr, "  -f file  File containing values to be searched\n");
+    fprintf(stderr, "  -f file  File containing values to be found\n");
     fprintf(stderr, "  -m       Move-to-front for separate chaining\n");
     fprintf(stderr, "  -s seed  Random seed [default: 0]\n");
     fprintf(stderr, "  -t s     Expect strings as input\n");
     fprintf(stderr, "  -p       Print the hash table to stdout\n");
     fprintf(stderr, "  -n size  Expected input size [default: 11]\n");
+    fprintf(stderr, "Collision resolution method:\n");
+    fprintf(stderr, "  -r c     Chaining with a linked list [default]\n");
+    fprintf(stderr, "  -r a     Chaining with an array\n");
+    fprintf(stderr, "  -r d     Open addressing with double hashing\n");
+    fprintf(stderr, "  -r l     Open addressing with linear probing\n");
     fprintf(stderr, "Hash functions:\n");
     fprintf(stderr, "  -h 0     hash with: worst_hash [default]\n");
     fprintf(stderr, "  -h 1     hash with: bad_hash, for strings\n");
@@ -82,7 +93,7 @@ static Options load_options(int argc, char *argv[]) {
         .coll   = NULL,
     };
 
-    while ((c = getopt(argc, argv, "c:f:h:mn:ps:t:")) != -1) {
+    while ((c = getopt(argc, argv, "c:f:h:mn:pr:s:t:")) != -1) {
         switch (c) {
             case 'h':
                 switch (atoi(optarg)) {
@@ -97,6 +108,13 @@ static Options load_options(int argc, char *argv[]) {
                     case 2: opts.coll = collide_clever; break;
                     default: usage_exit(opts.bin);
                 } break;
+            case 'r': switch (optarg[0]) {
+                    case 'a': opts.method = ARRAY;      break;
+                    case 'c': opts.method = LIST;       break;
+                    case 'd': opts.method = DOUBLE;     break;
+                    case 'l': opts.method = LINEAR;     break;
+                    default: usage_exit(opts.bin);
+                } break;
             case 'f': opts.find = optarg;       break;
             case 'm': opts.MTF = true;          break;
             case 'n': opts.size = atoi(optarg); break;
@@ -108,13 +126,7 @@ static Options load_options(int argc, char *argv[]) {
         }
     }
 
-    /* Check that input is specified. */
-    if (optind + 1 > argc) {
-        fprintf(stderr, "Missing collision resolution method\n");
-        usage_exit(opts.bin);
-    }
-
-    if (optind + 2 > argc) {
+    if (optind > argc) {
         fprintf(stderr, "Missing input keys\n");
         usage_exit(opts.bin);
     }
@@ -124,15 +136,7 @@ static Options load_options(int argc, char *argv[]) {
         opts.hash = (Hash) universal_hash;
     }
 
-    switch (argv[optind][0]) {
-        case 'a': opts.method = ARRAY;      break;
-        case 'c': opts.method = LIST;       break;
-        case 'd': opts.method = DOUBLE;     break;
-        case 'l': opts.method = LINEAR;     break;
-        default: usage_exit(opts.bin);
-    }
-
-    opts.insert = argv[optind + 1];
+    opts.insert = argv[optind];
 
     return opts;
 }
@@ -157,7 +161,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (opts.coll)
-        opts.coll(ht->size, opts.seed);
+        opts.coll(ht->size, opts.seed, NUM_COLLISIONS);
 
     if (opts.print)
         hash_print(ht, stdout);
