@@ -37,8 +37,10 @@ static bool is_prime(int n) {
     return true;
 }
 
-void collide_dumb(unsigned int size, unsigned int seed) {
+/* Print n strings that are hashed to 0 by universal_hash seeded with seed */
+void collide_dumb(unsigned int size, unsigned int seed, int n) {
 }
 
-void collide_clever(unsigned int size, unsigned int seed) {
+/* Print n strings that are hashed to 0 by universal_hash seeded with seed */
+void collide_clever(unsigned int size, unsigned int seed, int n) {
 }

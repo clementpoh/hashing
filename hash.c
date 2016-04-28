@@ -7,19 +7,24 @@
 
 #define MAXSTRLEN 256
 
+/* Initialise universal hash coefficients into cs */
 static void init_universal(int cs[], int len, int size);
 
-unsigned int worst_hash(Elem e, unsigned int size) {
+/* Used as the second hashing function on double hash */
+unsigned int linear_probe(void *e, unsigned int size) {
+    (void) e;
+    (void) size;
+    return 1;
+}
+
+/* Very simple hash */
+unsigned int worst_hash(void *e, unsigned int size) {
     (void) e;
     (void) size;
     return 0;
 }
 
-/* Only works with numeric types */
-unsigned int basic_hash(long n, unsigned int size) {
-    return n % size;
-}
-
+/* Bad hash function */
 unsigned int bad_hash(char *key, unsigned int size) {
     static int c = 0;
 
@@ -28,6 +33,12 @@ unsigned int bad_hash(char *key, unsigned int size) {
     return c * key[0] % size;
 }
 
+/* Basic numeric hash function */
+unsigned int basic_hash(long n, unsigned int size) {
+    return n % size;
+}
+
+/* Universal hash function as described in Dasgupta et. al 1.5.2 */
 unsigned int universal_hash(unsigned char *key, unsigned int size) {
     static int cs[MAXSTRLEN];
 
@@ -42,12 +53,7 @@ unsigned int universal_hash(unsigned char *key, unsigned int size) {
     return hash % size;
 }
 
-unsigned int linear_probe(Elem e, unsigned int size) {
-    (void) e;
-    (void) size;
-    return 1;
-}
-
+/* Initialise universal hash coefficients into cs */
 static void init_universal(int cs[], int len, int size) {
     for (int i = 0; i < len; i++) {
         cs[i] = rand() % size;

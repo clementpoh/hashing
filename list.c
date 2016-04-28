@@ -16,8 +16,6 @@
 
 #include "list.h"
 
-#define MAX_LINE_LEN 256
-
 /* An abstraction of recursively traversing a list from right to left */
 static void *foldl(void *(*f)(void *acc, void *data), void *acc, List list);
 

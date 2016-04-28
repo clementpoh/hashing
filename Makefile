@@ -41,7 +41,7 @@ submission: $(SUBMIT)
 
 .PHONY: clean
 clean:
-	rm -f $(OBJ)
+	rm -f $(OBJ) spec.pdf
 
 .PHONY: clobber
 clobber: clean

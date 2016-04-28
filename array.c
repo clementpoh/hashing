@@ -1,16 +1,18 @@
 /*
 ** COMP200007 Design of Algorithms
-** Data structure to store an array of (key, void *) pairs, but
-** stores them in separate arrays, first vals then ptrs.
+** Data structure to store an array of (void *)
 **
-** Author: Andrew Turpin
-** Wed  8 May 2013 19:54:26 EST
+** Author: Clement Poh
+** Adapted from code by Andrew Turpin
 */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
 #include "array.h"
+
+/* Move value at pos to front of array */
+static void move_to_front(array_t *A, int pos);
 
 /* Create an empty array */
 array_t *array_create(void) {
@@ -23,7 +25,8 @@ array_t *array_create(void) {
     return A;
 }
 
-void move_to_front(array_t *A, int pos) {
+/* Move value at pos to front of array */
+static void move_to_front(array_t *A, int pos) {
     void *head = A->vals[pos];
 
     for(int j = pos; j > 0; j--) {
@@ -45,15 +48,16 @@ void array_insert(array_t **A, void *v) {
     assert((*A)->vals != NULL);
 
     (*A)->vals[(*A)->size - 1] = v;
-
 }
 
+/* Add v to A at the start of the array */
 void array_insert_MTF(array_t **A, void *v) {
     array_insert(A, v);
     move_to_front((*A), (*A)->size - 1);
 }
 
-void *array_find(bool (*eq)(void *, void *), array_t *A, void *v) {
+/* Returns a pointer to a value eq to v in A, NULL otherwise */
+void *array_find(bool (*eq)(void *v, void *d), array_t *A, void *v) {
     assert(A != NULL);
     int i = 0;
 
@@ -65,7 +69,8 @@ void *array_find(bool (*eq)(void *, void *), array_t *A, void *v) {
     return NULL;
 }
 
-void *array_find_MTF(bool (*eq)(void *, void *), array_t *A, void *v) {
+/* Returns a pointer to a value eq to v in A, and moves it to the front */
+void *array_find_MTF(bool (*eq)(void *v, void *d), array_t *A, void *v) {
     assert(A != NULL);
     int i = 0;
 
@@ -84,7 +89,8 @@ void *array_find_MTF(bool (*eq)(void *, void *), array_t *A, void *v) {
     return A->vals[0];
 }
 
-void array_delete(bool (*eq)(void *, void *), array_t *A, void *v) {
+/* Delete v from A */
+void array_delete(bool (*eq)(void *v, void *d), array_t *A, void *v) {
     assert(A != NULL);
     int i = 0;
 
@@ -101,6 +107,7 @@ void array_delete(bool (*eq)(void *, void *), array_t *A, void *v) {
     A->vals = realloc(A->vals, sizeof(A->vals) * A->size);
 }
 
+/* Use print to print each element of A to f */
 void array_fprint(void (*print)(FILE *f, void *data), FILE *f, array_t *A) {
     if (A) {
         for (int i = 0; i < A->size; i++) {

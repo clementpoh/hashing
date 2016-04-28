@@ -233,8 +233,8 @@ bad_hash(Key k, unsigned int size) {
         Suppose you're a malicious annoyance who wants to slow down the hash table to make other users' lives difficult.
         Suppose also that the $r_i$ values for universal-hash are made public.
         Write a function
-        {\tt collide\_dumb(unsigned int size, unsigned int seed)}
-        that generates two strings that {\tt universal\_hash()} hashes to 0.
+        {\tt collide\_dumb(unsigned int size, unsigned int seed, int n)}
+        that generates $n$ strings that {\tt universal\_hash()} hashes to 0.
         For this question, do this the unintelligent way: simply enumerate a lot of
         strings and keep any that hash to 0, until you have at least two of them.
         The output should be printed to {\tt stdout} one line per string.
@@ -256,7 +256,7 @@ but you get the idea.)
 \item[Generating collisions by clever maths: ]
     Look at the extended Euclid algorithm on p.21 of Dasgupta {\it et al.}
         Write a new function
-        {\tt collide\_clever(unsigned int size, unsigned int random\_seed)}
+        {\tt collide\_clever(unsigned int size, unsigned int random\_seed, int n)}
         that achieves the same thing as {\tt collide\_dumb()},
         but more efficiently.
         For full credit,
