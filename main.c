@@ -63,13 +63,13 @@ static void usage_exit(char *bin) {
     fprintf(stderr, "  -r d     Open addressing with double hashing\n");
     fprintf(stderr, "  -r l     Open addressing with linear probing\n");
     fprintf(stderr, "Hash functions:\n");
-    fprintf(stderr, "  -h 0     hash with: worst_hash [default]\n");
-    fprintf(stderr, "  -h 1     hash with: bad_hash, for strings\n");
-    fprintf(stderr, "  -h 2     hash with: basic_hash, for ints\n");
-    fprintf(stderr, "  -h 3     hash with: univ_hash, for strings\n");
+    fprintf(stderr, "  -h w     hash with: worst_hash [default]\n");
+    fprintf(stderr, "  -h n     hash with: num_hash, for ints\n");
+    fprintf(stderr, "  -h b     hash with: bad_hash, for strings\n");
+    fprintf(stderr, "  -h u     hash with: universal_hash, for strings\n");
     fprintf(stderr, "Generate universal hash collisions:\n");
-    fprintf(stderr, "  -c 1     hash collisions with dumb_collisions\n");
-    fprintf(stderr, "  -c 2     hash collisions with clever_collisions\n");
+    fprintf(stderr, "  -c d     hash collisions with dumb_collisions\n");
+    fprintf(stderr, "  -c c     hash collisions with clever_collisions\n");
 
     exit(EXIT_FAILURE);
 }
@@ -96,16 +96,16 @@ static Options load_options(int argc, char *argv[]) {
     while ((c = getopt(argc, argv, "c:f:h:mn:pr:s:t:")) != -1) {
         switch (c) {
             case 'h':
-                switch (atoi(optarg)) {
-                    case 1: opts.hash = (Hash) bad_hash;        break;
-                    case 2: opts.hash = (Hash) basic_hash;      break;
-                    case 3: opts.hash = (Hash) universal_hash;  break;
+                switch (optarg[0]) {
+                    case 'n': opts.hash = (Hash) num_hash;        break;
+                    case 'b': opts.hash = (Hash) bad_hash;        break;
+                    case 'u': opts.hash = (Hash) universal_hash;  break;
                     default: opts.hash = (Hash) worst_hash;
                 } break;
             case 'c':
-                switch (atoi(optarg)) {
-                    case 1: opts.coll = collide_dumb;   break;
-                    case 2: opts.coll = collide_clever; break;
+                switch (optarg[0]) {
+                    case 'd': opts.coll = collide_dumb;   break;
+                    case 'c': opts.coll = collide_clever; break;
                     default: usage_exit(opts.bin);
                 } break;
             case 'r': switch (optarg[0]) {

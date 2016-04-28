@@ -20,7 +20,7 @@ unsigned int worst_hash(void *e, unsigned int size);
 unsigned int bad_hash(char *key, unsigned int size);
 
 /* Basic numeric hash function */
-unsigned int basic_hash(long n, unsigned int size);
+unsigned int num_hash(long n, unsigned int size);
 
 /* Universal hash function as described in Dasgupta et. al 1.5.2 */
 unsigned int universal_hash(unsigned char *key, unsigned int size);

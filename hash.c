@@ -33,6 +33,11 @@ unsigned int worst_hash(void *e, unsigned int size) {
     return 0;
 }
 
+/* Basic numeric hash function */
+unsigned int num_hash(long n, unsigned int size) {
+    return n % size;
+}
+
 /* Bad hash function */
 unsigned int bad_hash(char *key, unsigned int size) {
     static int c = 0;
@@ -40,11 +45,6 @@ unsigned int bad_hash(char *key, unsigned int size) {
     if (!c) c = rand();
 
     return c * key[0] % size;
-}
-
-/* Basic numeric hash function */
-unsigned int basic_hash(long n, unsigned int size) {
-    return n % size;
 }
 
 /* Universal hash function as described in Dasgupta et. al 1.5.2 */
