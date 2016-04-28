@@ -107,18 +107,19 @@ hash table to work with generic pointers, but provided interfaces to work with
 of hash functions from Dasgupta 1.5.2.
 
 \begin{description}
-    \item[Data type:] The functions {\tt int\_eq}, {\tt int\_print} and the
-        standard library function {\tt atoi} enable the hash table to work
-        with {\tt int}s, by treating the pointers as {\tt int}s.
+    \item[Data type:]
+        The functions {\tt int\_eq()}, {\tt int\_print()},
+        and the standard library function {\tt atoi} enable the hash table to work with {\tt int}s,
+        by treating the pointers as {\tt int}s.
 
-        Implement the functions {\tt str\_eq}, {\tt str\_copy} and {\tt
-        str\_print} in {\tt types.c} to enable the hash table to work with
-        strings by treating the input generic pointers as {\tt char*}.
+        Implement the functions {\tt str\_eq()}, {\tt str\_copy()},
+        and {\tt str\_print()} in {\tt types.c} to enable the hash table to work with
+        strings by treating the input generic pointers as {\tt char *}.
 
     \item[Code size:]
         The existing code simply makes the hash table the same size as the command-line argument ``size''.
         Now assume that the command-line input is the maximum expected number of elements,
-        implement {\tt determine\_size} in {\tt extra.c} to choose a hash table {\tt size}
+        implement {\tt determine\_size()} in {\tt extra.c} to choose a hash table {\tt size}
         equal to the next prime after {\tt 2*size}.
         If you like, you can reuse the code at
         {\tt http://people.eng.unimelb.edu.au/ammoffat/ppsaa/c/isprime.c},
@@ -133,14 +134,12 @@ The workshop contrasted open addressing with double hashing approach against the
     \item[Linear probing:]
         The hash table of the assignment also implements double hashing.
         Implement the function {\tt linear\_probing} in {\tt hash.c}
-        so when it's used as the second hash function of a double
-        hashing hash table it performs linear probing as its collision
-        resolution method.
+        so when it's used as the second hash function of a double hashing hash table it performs linear probing as its collision resolution method.
 \end{description}
 
 \section*{Using randomness from the C standard library}
-We'll use the pseudorandom number generator from the C standard library.  A
-pseudorandom number generator has two main operations:
+We'll use the pseudorandom number generator from the C standard library.
+A pseudorandom number generator has two main operations:
 \begin{itemize}
 \item A \emph{seed} operation, in which the pseudorandom number generator is
     initialised with some source of ``real'' randomness.  We'll use a file.
@@ -148,13 +147,13 @@ pseudorandom number generator has two main operations:
     internal state and returns some ``random-looking'' bytes, then updates the
         internal state (for next time).
 \end{itemize}
-So for example if {\tt seed} were a number, the following fragment would
-initialise the pseudorandom number generator with it, then print ten
-random-looking integers.
+So for example if {\tt seed} were a number,
+the following fragment would initialise the pseudorandom number generator with it,
+then print ten random-looking integers.
 
 \begin{verbatim}
    srand(seed);
-   for (i=0;i<10;i++) {
+   for (i = 0; i < 10; i++) {
       printf("%d\n",rand());
    }
 \end{verbatim}
@@ -163,8 +162,8 @@ random-looking integers.
 {\tt http://www.gnu.org/software/libc/manual/html\_node/ISO-Random.html},
 but the example should be all you need for this project.)
 
-\section*{Implementing and testing the hash table} You can see we've added a
-command-line argument {\tt -s seed} to main.
+\section*{Implementing and testing the hash table}
+You can see we've added a command-line argument {\tt -s seed} to main.
 
 Remember a key property of hash functions is that they are consistent.
 This means we get the same result every time we apply it on a given input.
@@ -234,15 +233,15 @@ bad_hash(Key k, unsigned int size) {
         Write a function
         {\tt collide\_dumb(unsigned int size, unsigned int seed, int n)}
         that generates $n$ strings that {\tt universal\_hash()} hashes to 0.
-        For this question, do this the unintelligent way: simply enumerate a lot of
-        strings and keep any that hash to 0, until you have at least two of them.
+        For this question, do this the unintelligent way:
+        simply enumerate a lot of strings and keep any that hash to 0,
+        until you have at least two of them.
         The output should be printed to {\tt stdout} one line per string.
         To avoid suspicion, your list must not repeat any strings, even padded with zeros.
         You may, of course, call {\tt universal-hash}.
 
-(If you really wanted to slow down the table you'd need a lot more than two clashing strings,
-of course,
-but you get the idea.)
+% (If you really wanted to slow down the table you'd need a lot more than two clashing strings,
+% of course, but you get the idea.)
 \end{description}
 
 \begin{enumerate}[resume]
@@ -255,7 +254,7 @@ but you get the idea.)
 \item[Generating collisions by clever maths: ]
     Look at the extended Euclid algorithm on p.21 of Dasgupta {\it et al.}
         Write a new function
-        {\tt collide\_clever(unsigned int size, unsigned int random\_seed, int n)}
+        {\tt collide\_clever(unsigned int size, unsigned int seed, int n)}
         that achieves the same thing as {\tt collide\_dumb()},
         but more efficiently.
         For full credit,
@@ -308,7 +307,9 @@ Bitcoin's proofs of work use SHA-256 to prove that someone has guessed lots of h
         Roughly, you make a block with some transactions (``Eve pays Rao \$50'' let's say) and concatenate a random element $r$.
         If you can find a value of $r$ for which
         $$\textit{SHA-256(``Eve pays Rao \$50''} \concat r) < \textit{threshold}$$
-        you've mined a block and earned some money.\footnote{Actually, to be inserted into the blockchain you have to be the \emph{first} to do this, but never mind.}.
+        you've mined a block and earned some money.\footnote{
+            Actually, to be inserted into the blockchain you have to be the \emph{first} to do this, but never mind.
+        }
 
 \item[Optional: Generate hash collisions]
     Adapt the example code to test through random input values to SHA-256 until you get 12 zeros at the start.
