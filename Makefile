@@ -5,7 +5,7 @@
 #
 # Replace '<STUDENT-ID>' with your Student ID e.g. 269508
 STUDENTID = <STUDENT-ID>
-SUBMIT	= hash.c types.c primes.c report.pdf
+SUBMIT	= hash.c types.c extra.c report.pdf
 
 # Define the C compiler
 CC      = gcc
@@ -20,13 +20,13 @@ CC      = gcc
 #  -O0 to turn off optimisations
 #  -g  to include debugging symbols
 #  -pg for profiling
-CFLAGS  = -Wall -Wextra -Wpedantic -ansi -std=c99 -g -O0
+CFLAGS  = -Wall -Wextra -Wpedantic -ansi -std=c99 -m32 -O0 -g # -pg
 
 # Define any libraries to be linked
-LIB		= -lcrypto -lm
+LIB		=
 
 # Define the source, header and object files
-HDR		= array.h list.h hashtable.h hash.h types.h primes.h
+HDR		= array.h list.h hashtable.h hash.h types.h extra.h
 SRC		= $(HDR:.h=.c) main.c
 OBJ     = $(SRC:.c=.o)
 
@@ -55,9 +55,12 @@ tags:
 	ctags -w $(SRC)
 
 test: $(TARGET)
-	./ass2 c -h 3 -t s test/str.in -f test/not.in -p
+	./ass2 c -h 3 -m -t s test/str.in -f test/not.in -p
 
-collisions: $(TARGET)
+collide: $(TARGET)
 	./ass2 c -h 3 -t s -c 1 test/str.in
+
+spec.pdf: spec.tex
+	pdflatex spec.tex && rm spec.log spec.aux
 
 $(OBJ): $(HDR)

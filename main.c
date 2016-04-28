@@ -3,14 +3,14 @@
 #include <getopt.h>
 #include <assert.h>
 
-#include "primes.h"
+#include "extra.h"
 #include "hash.h"
 #include "types.h"
 #include "hashtable.h"
 
-#define DEFAULT_BUCKETS 11
+#define DEFAULT_SIZE 11
 
-/* Struct to store the configuration options from the command line */
+/* Store the configuration options from the command line */
 typedef struct {
     char *bin;
     char *insert;
@@ -28,10 +28,10 @@ typedef struct {
 /* Print usage message and exit */
 static void usage_exit(char *bin);
 
-/* Load the the command line options into opts */
+/* Load the command line options into opts */
 static Options load_options(int argc, char *argv[]);
 
-static HT create_table(Options opts);
+static HT create_table(Options opts, int size);
 
 /* Returns a pointer to file */
 static FILE *safe_open(char *filename, const char *mode);
@@ -63,14 +63,14 @@ static void usage_exit(char *bin) {
     exit(EXIT_FAILURE);
 }
 
-/* Load the the command line options into opts */
+/* Load the command line options into opts */
 static Options load_options(int argc, char *argv[]) {
     extern char *optarg;
     extern int optind;
     int c;
     Options opts = {
         .bin    = argv[0],
-        .size   = DEFAULT_BUCKETS,
+        .size   = DEFAULT_SIZE,
         .insert = NULL,
         .find   = NULL,
         .method = LIST,
@@ -86,9 +86,9 @@ static Options load_options(int argc, char *argv[]) {
         switch (c) {
             case 'h':
                 switch (atoi(optarg)) {
-                    case 1: opts.hash = (Hash) bad_hash;     break;
-                    case 2: opts.hash = (Hash) basic_hash;   break;
-                    case 3: opts.hash = (Hash) univ_hash;    break;
+                    case 1: opts.hash = (Hash) bad_hash;        break;
+                    case 2: opts.hash = (Hash) basic_hash;      break;
+                    case 3: opts.hash = (Hash) universal_hash;  break;
                     default: opts.hash = (Hash) worst_hash;
                 } break;
             case 'c':
@@ -119,9 +119,9 @@ static Options load_options(int argc, char *argv[]) {
         usage_exit(opts.bin);
     }
 
-    if (opts.coll && opts.hash != (Hash) univ_hash) {
+    if (opts.coll && opts.hash != (Hash) universal_hash) {
         fprintf(stderr, "-c: changing hash to universal hash\n");
-        opts.hash = (Hash) univ_hash;
+        opts.hash = (Hash) universal_hash;
     }
 
     switch (argv[optind][0]) {
@@ -139,7 +139,9 @@ static Options load_options(int argc, char *argv[]) {
 
 int main(int argc, char *argv[]) {
     Options opts = load_options(argc, argv);
-    HT ht = create_table(opts);
+
+    int size = determine_size(opts.size);
+    HT ht = create_table(opts, size);
 
     /* Seed the random number generator */
     srand(opts.seed);
@@ -160,35 +162,32 @@ int main(int argc, char *argv[]) {
     if (opts.print)
         hash_print(ht, stdout);
 
-
     return 0;
 }
 
-static HT create_table(Options opts) {
-    unsigned int size = next_prime(2 * opts.size + 1);
-
-    Eq    eq    = opts.string ? (Eq)    str_eq      : (Eq)      int_eq;
-    Parse parse = opts.string ? (Parse) str_copy    : (Parse)   atoi;
-    Print print = opts.string ? (Print) str_print   : (Print)   int_print;
+/* Create the hash table from the program options */
+static HT create_table(Options opts, int size) {
+    Type t = { .eq    = opts.string ? (Eq)    str_eq    : (Eq) int_eq
+             , .parse = opts.string ? (Parse) str_copy  : (Parse) atoi
+             , .print = opts.string ? (Print) str_print : (Print) int_print };
 
     HT ht = NULL;
     switch (opts.method) {
         case ARRAY:
             ht = opts.MTF
-                ? new_hash_array_MTF(size, opts.hash, eq, parse, print)
-                : new_hash_array(size, opts.hash, eq, parse, print);
+                ? new_hash_array_MTF(size, opts.hash, t)
+                : new_hash_array(size, opts.hash, t);
             break;
         case LIST:
             ht = opts.MTF
-                ? new_hash_list_MTF(size, opts.hash, eq, parse, print)
-                : new_hash_list(size, opts.hash, eq, parse, print);
+                ? new_hash_list_MTF(size, opts.hash, t)
+                : new_hash_list(size, opts.hash, t);
             break;
         case DOUBLE:
-            /* No way to choose the the second hash function */
-            ht = new_hash_double(size, opts.hash, opts.hash, eq, parse, print);
+            /* No way to choose the second hash function */
+            ht = new_hash_double(size, opts.hash, opts.hash, t);
             break;
-        case LINEAR:
-            ht = new_hash_linear(size, opts.hash, eq, parse, print);
+        case LINEAR: ht = new_hash_linear(size, opts.hash, t);
             break;
         default:
             fprintf(stderr, "Invalid collision resolution method\n");

@@ -16,6 +16,13 @@ typedef bool (*Eq)(Elem e1, Elem e2);
 typedef Elem (*Parse)(char *str);
 typedef void (*Print)(FILE *file, Elem e);
 
+/* Keep track of them in a struct */
+typedef struct {
+    Eq eq;
+    Parse parse;
+    Print print;
+} Type;
+
 /* Functions for the buckets */
 typedef Elem (*bucket_insert_fn)(Bucket *b, Elem e);
 typedef Elem (*bucket_search_fn)(Eq eq_fn, Bucket b, Elem e);
@@ -56,26 +63,25 @@ struct hash_table_t {
     /* The following fields aren't strictly necessary */
     Chain method;
     bool MTF;
-
 };
 
 /* Create a new hash table, separate chaining with arrays */
-extern HT new_hash_array(unsigned int size, Hash hash, Eq eq, Parse parse, Print print);
+extern HT new_hash_array(unsigned int size, Hash hash, Type t);
 
 /* Create a new hash table, separate chaining with arrays and move-to-front */
-extern HT new_hash_array_MTF(unsigned int size, Hash hash, Eq eq, Parse parse, Print print);
+extern HT new_hash_array_MTF(unsigned int size, Hash hash, Type t);
 
 /* Create a hash table, separate chaining with linked lists */
-extern HT new_hash_list(unsigned int size, Hash hash, Eq eq, Parse parse, Print print);
+extern HT new_hash_list(unsigned int size, Hash hash, Type t);
 
 /* Create a hash table, separate chaining with linked and move-to-front */
-extern HT new_hash_list_MTF(unsigned int size, Hash hash, Eq eq, Parse parse, Print print);
+extern HT new_hash_list_MTF(unsigned int size, Hash hash, Type t);
 
 /* Create a  hash table with open addressing using linear probing */
-extern HT new_hash_linear(unsigned int size, Hash hash, Eq eq, Parse parse, Print print);
+extern HT new_hash_linear(unsigned int size, Hash hash, Type t);
 
 /* Create a  hash table with open addressing using double hashing */
-extern HT new_hash_double(unsigned int size, Hash h1, Hash h2, Eq eq, Parse parse, Print print);
+extern HT new_hash_double(unsigned int size, Hash h1, Hash h2, Type t);
 
 /* Load data into ht from file */
 extern void hash_load(HT ht, FILE *file);

@@ -1,0 +1,425 @@
+\documentclass[11pt]{article}
+\usepackage{a4wide}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{stmaryrd}
+\usepackage{enumerate}
+%\usepackage{mdwlist}
+\usepackage{enumitem}
+\usepackage{booktabs}
+
+\setlength{\parskip}{1em}
+\oddsidemargin -9mm
+\evensidemargin-9mm
+\textwidth 180mm
+\textheight 260mm
+\topmargin -20mm
+\raggedright{}
+
+\title{}
+\date{}
+
+\newcommand{\VTNote}[1]{{\it (Note: #1)}}
+\newcommand{\size}{{\tt size}}
+\newcommand{\concat}{||}
+\newcommand{\commentOut}[1]{}
+
+\begin{document}
+
+{\large
+\begin{center}
+DEPARTMENT OF COMPUTING AND INFORMATION SYSTEMS\vspace{2ex}
+
+{\Large\bf
+COMP20007 Design of Algorithms, Semester 1, 2016
+
+Assignment 2: Hashing
+}\vspace{2ex}
+
+Due: 5pm Friday 20th May
+\end{center}
+}
+
+\section*{Objective}
+In this project, you'll explore more about what makes a good or bad hash function,
+how to quantify its goodness or badness,
+and why different kinds of properties are needed in different situations.
+
+This assignment extends Workshop~8,
+offering an alternative implementation for a hash table.
+The skeleton code is on the LMS\@.
+You'll need to read it and Dasgupta {\it et al.} \/1.5.2 carefully.
+
+For the purposes of this assignment we'll use separate chaining.
+Assume that all the elements that clash at a particular location are stored in a linked list,
+in the order they arrive unless explicitly stated otherwise.
+
+The assignment includes both coding instructions
+(marked with letters)
+and theory questions (marked with numbers).
+Please include the answers to the theory questions in a separate file entitled ``report.pdf''
+
+\paragraph{Files:}
+Please download the skeleton code from the LMS\@.
+{\bf Do not alter filenames or structure}.
+The files are as follows.
+
+\begin{center}
+\begin{tabular}{ll}
+\toprule
+\texttt{Makefile} & Download from LMS and edit to include your student ID.\\
+\texttt{main.c} & Download from LMS and do not change.\\
+\texttt{hashtable.c, hashtable.h} & '' \\
+\texttt{list.c, list.h} & '' \\
+\texttt{array.c, array.h} & '' \\
+\texttt{types.h} & '' \\
+\texttt{hash.h} & '' \\
+\texttt{extra.h} & '' \\
+\midrule
+\texttt{types.c} & Replace with your own implementation.\\
+\texttt{hash.c} & '' \\
+\texttt{extra.c} & '' \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section*{Theory of hash functions and hash tables}
+Let $\size$ be the size of the table and $n$ the number of elements to be inserted.
+\begin{enumerate}
+        \item Suppose the hash function hashes everything to the same bucket.
+            Using big-O notation, write the complexity of insert and search in
+            terms of $\size$ and $n$.  Justify your answer.
+        \item Suppose the hash function spreads the input perfectly evenly over
+            all the buckets.  Using big-O notation, write the complexity of
+            insert and search in terms of $\size$ and $n$.  Justify your
+            answer.
+        \item Suppose that the hash function never hashes two different inputs
+            to the same bucket.  Using big-O notation, write the complexity of
+            insert and search in terms of $\size$ and $n$.  Justify your
+            answer.
+      \end{enumerate}
+
+\section*{Working with strings}
+The Workshop exercise required the keys to be {\tt int}s. We've recreated the
+hash table to work with generic pointers, but provided interfaces to work with
+{\tt int}s. The purpose of this assignment is to explore the universal families
+of hash functions from Dasgupta 1.5.2.
+
+\begin{description}
+    \item[Data type:] The functions {\tt int\_eq}, {\tt int\_print} and the
+        standard library function {\tt atoi} enable the hash table to work
+        with {\tt int}s, by treating the pointers as {\tt int}s.
+
+        Implement the functions {\tt str\_eq}, {\tt str\_copy} and {\tt
+        str\_print} in {\tt types.c} to enable the hash table to work with
+        strings by treating the input generic pointers as {\tt char*}.
+
+    \item[Code size:]
+        The existing code simply makes the hash table the same size as the command-line argument ``size''.
+        Now assume that the command-line input is the maximum expected number of elements,
+        and write some code to choose a hash table {\tt size} equal to the next
+        prime after {\tt 2*size}.  If you like, you can reuse the code at {\tt
+        http://people.eng.unimelb.edu.au/ammoffat/ppsaa/c/isprime.c}, with
+        proper attribution of course.
+\end{description}
+
+\section*{Linear probing with double hashing}
+While the rest of the assignment assumes the hash table uses separate
+chaining with linked lists. The workshop contrasted open addressing with
+double hashing approach against the separate chaining collision resolution
+methods.
+
+\begin{description}
+    \item[Linear probing:] The hash table of the assignment also implements
+        double hashing. Implement the function {\tt linear\_probing} in {\tt
+        hash.c} so when it's used as the second hash function of a double
+        hashing hash table it performs linear probing as its collision
+        resolution method.
+\end{description}
+
+\section*{Using randomness from the C standard library}
+We'll use the pseudorandom number generator from the C standard library.  A
+pseudorandom number generator has two main operations:
+\begin{itemize}
+\item A \emph{seed} operation, in which the pseudorandom number generator is
+    initialised with some source of ``real'' randomness.  We'll use a file.
+\item A \emph{get} operation, which is a deterministic operation that takes the
+    internal state and returns some ``random-looking'' bytes, then updates the
+        internal state (for next time).
+\end{itemize}
+So for example if {\tt seed} were a number, the following fragment would
+initialise the pseudorandom number generator with it, then print ten
+random-looking integers.
+
+\begin{verbatim}
+   srand(seed);
+   for (i=0;i<10;i++) {
+      printf("%d\n",rand());
+   }
+\end{verbatim}
+
+(If you're curious, there's more detail at {\tt
+http://www.gnu.org/software/libc/manual/html\_node/ISO-Random.html}, but the
+example should be all you need for this project.)
+
+\section*{Implementing and testing the hash table} You can see we've added a
+command-line argument {\tt -s seed} to main.
+
+Remember a key property of hash functions is that they are consistent.
+This means we get the same result every time we apply it on a given input.
+
+You may wish to look at how the {\tt static} keyword may be used on variables
+within functions in C to achieve consistency of hash functions.
+
+\begin{description}
+    \item {\bf A not-quite-right start:}
+        We could consider using the {\tt rand()} function from the C standard library,
+        seeded with {\tt \_seed},
+        to generate a random coefficient $a \in \{0, 1, \ldots,
+        \texttt{size-1}\}$,
+        and using it like this:
+
+\begin{verbatim}
+bad_hash(Key k, unsigned int size) {
+     /* Generate a random a here */
+    return a * key[0] % size;
+}
+\end{verbatim}
+
+\end{description}
+
+\begin{enumerate}[resume]
+    \item Why is this a bad hash function?
+        Give some example input on which the hash table would behave badly if it was using this hash function.
+\end{enumerate}
+
+\begin{description}
+    \item {\bf Implementing universal hashing: }
+        Review the definition of universal hashing from Dasgupta {\it et al.} \/1.5.2.
+        You will construct a universal hash function that takes each character of the string separately.
+        Think of a string as an array of \texttt{unsigned char}.
+        You can assume a maximum string length, {\tt MAXSTRLEN}.
+        Assuming that {\tt srand} has been seeded with {\tt seed} as above,
+        generate a list of random integers $r_0, r_1, \ldots, r_{{\tt MAXSTRLEN}}$
+        in the range $\{0,1,\ldots,{\tt size-1}\}$.
+
+        Define {\tt universal\_hash(Key k, unsigned int size) } to implement:
+
+        $$\textit{universal-hash(string)} = \left( \sum_{i=0}^{ \textit{length(string)}-1} r_i * string[i] \right) \bmod \size $$
+
+        Note that string[i] means the $i$-th character of the string,
+        starting from 0.
+
+        Tip: To generate random values in the range $\{0,1, \ldots {\tt size}-1 \}$,
+        use {\tt rand() \%  size}.
+        This isn't strictly perfect (think about whether it wraps around an integer number of times),
+        but it will do fine.
+\end{description}
+
+\begin{enumerate}[resume]
+    \item {\bf Average-case analysis}
+        Assume that $r_0, r_1, \ldots$ are chosen randomly and independently of the list of inputs.
+        Using big-O notation,
+        write the \emph{expected} complexity of insert and search in terms of $\size$ and $n$.
+        Justify your answer.
+\end{enumerate}
+
+\begin{description}
+    \item[Generating collisions by trial and error: ]
+        Suppose you're a malicious annoyance who wants to slow down the hash table to make other users' lives difficult.
+        Suppose also that the $r_i$ values for universal-hash are made public.
+        Write a function
+        {\tt collide\_dumb(unsigned int size, unsigned int seed)}
+        that generates two strings that {\tt universal\_hash()} hashes to 0.
+        For this question, do this the unintelligent way: simply enumerate a lot of
+        strings and keep any that hash to 0, until you have at least two of them.
+        The output should be printed to {\tt stdout} one line per string.
+        To avoid suspicion, your list must not repeat any strings, even padded with zeros.
+        You may, of course, call {\tt universal-hash}.
+
+(If you really wanted to slow down the table you'd need a lot more than two clashing strings,
+of course,
+but you get the idea.)
+\end{description}
+
+\begin{enumerate}[resume]
+\item Using big-O notation,
+    write the expected running time of your algorithm,
+    for generating $2$ hashes to 0 in a table of size {\tt size}.
+\end{enumerate}
+
+\begin{description}
+\item[Generating collisions by clever maths: ]
+    Look at the extended Euclid algorithm on p.21 of Dasgupta {\it et al.}
+        Write a new function
+        {\tt collide\_clever(unsigned int size, unsigned int random\_seed)}
+        that achieves the same thing as {\tt collide\_dumb()},
+        but more efficiently.
+        For full credit,
+        your strings must have only ASCII alphanumeric characters.
+\end{description}
+
+\begin{enumerate}[resume]
+\item {\bf Worst-case analysis}
+    Using big-O notation, write the expected complexity of insert and search in terms of $\size$.
+        Justify your answer.
+        You can assume that integer operations (like + and *) take a constant amount of time.
+\end{enumerate}
+
+\section*{Cryptographic hashing}
+A cryptographic hash function has all the properties of a ``good'' hash function, plus some extras.
+Cryptographic hash functions should also be collision-resistant and preimage-resistant,
+as described in lectures.
+You just showed that  universal-hash is not collision-resistant, given public randomness.
+(It's not preimage resistant either.)
+
+One popular cryptographic hash function is SHA-256.
+The '256' part means that it outputs a digest of 256 binary digits.
+(Recent advice suggests that SHA-256 is a little outdated,
+and that we should be switching to at least SHA-384,
+but we'll stick with 256 for this project.)
+
+\begin{enumerate}[resume]
+\item How many guesses would you have to make before you found, with at least
+    50\% probability, a message that SHA-256 hashes to the string of all 1's?
+        How about a string with 30 zeros at the start?
+\end{enumerate}
+
+\begin{description}
+\item[Optional.  Cryptographic hash implementation]
+    MINGW's openssl suite includes a SHA-256 implementation.
+        Take the example code,
+        {\tt sha256test.c} from the {LMS}.
+        Check that you have the right libraries installed---on MinGW,
+        you might need to add {\tt msys-libcrypt, msys-libopenssl} and
+        {\tt msys-openssl},
+        including the dev version when there is one.
+        You may also need to take some care when compiling.
+        On a default MinGW setup under windows,
+        you can use the {\tt -I} option to tell gcc where to look for a {\tt \#include}'d file,
+        and the {\tt -L} option to tell it where to find a library to link.
+        A command something like this should work.
+        {\tt gcc -Wall -IC:/MinGW/msys/1.0/include -o sha256test sha256test.c -lcrypto -LC:/MinGW/msys/1.0/lib}
+
+Bitcoin's proofs of work use SHA-256 to prove that someone has guessed lots of hashes.
+        Roughly, you make a block with some transactions (``Eve pays Rao \$50'' let's say) and concatenate a random element $r$.
+        If you can find a value of $r$ for which
+        $$\textit{SHA-256(``Eve pays Rao \$50''} \concat r) < \textit{threshold}$$
+        you've mined a block and earned some money.\footnote{Actually, to be inserted into the blockchain you have to be the \emph{first} to do this, but never mind.}.
+
+\item[Optional: Generate hash collisions]
+    Adapt the example code to test through random input values to SHA-256 until you get 12 zeros at the start.
+        How many tries do you need on average?
+        How long does it take?
+        Use the timing techniques from Workshop~8.
+        Do some online research to find the current threshold for bitcoin.
+        How long would it take you to use your code to mine a real block?
+
+\item[Optional: Blockchain manipulation]  Suppose that instead of SHA-256,
+    the bitcoin blockchain used universal-hashing in which the $r_i$ values were public.
+        Explain how you could spend the same coin twice.
+
+%\paragraph{For curiosity (not examined):} Look up the current threshold, price
+        %and difficulty of bitcoin mining.  How much money are you going to
+        %make running this program on MINGW?   (**VT: I'm trying to make the
+        %point that those people use really optimised computation.)
+
+\end{description}
+
+\section*{Submission}
+
+Submission is via LMS under COMP20007, ``Assignment 2''.
+Submissions will close automatically at the deadline.
+NB\@. Machine and network load/problems right before the deadline is
+not a sufficient excuse for a poor or missing submission.
+As per the Subject Information Sheet from Lecture 1: ``The late penalty is 20\%
+of the available marks for that project
+for each day (or part thereof) overdue.
+Submissions more than three days late will not be accepted.''
+
+Submit a single archive file (e.g. \texttt{.tar.gz} or \texttt{.zip}) via the
+LMS containing the four files:
+\texttt{types.c},
+\texttt{hash.c},
+\texttt{extra.c},
+\texttt{report.pdf}.
+It should unpack into a folder, where the folder is named using your student id.
+To make this easy, we've added a submission target to the Makefile.
+You need to locate the line \texttt{STUDENTID = <STUDENT-ID>} and modify it with your student id.
+Then you can type \texttt{make submission} to create the required archive file.
+
+\emph{Submissions not adhering to these requirements will be subject to a 2 point penalty.}
+
+\paragraph{Marking:}
+The four coding parts of the assignment will be marked as follows:
+you will lose a mark if your submission does not identify you in the opening comment of each submitted file;
+you will lose a mark if your solution is incorrect in some way
+(breaks on certain inputs, has memory leaks, requires fixing to work at all);
+and you will lose a mark if your solution is difficult to interpret
+(minimal or unhelpful comments, obscure variable names).
+The report will get full marks if it is a succinct,
+factual report on running times including a discussion comparing times to big-O bounds.
+You will lose marks for missing timing results,
+missing graph, missing big-O discussion.
+\emph{NB, the assessment is on the algorithmic content of your work and your effective
+communication; this is not primarily a programming assignment.}
+
+\commentOut{
+\paragraph{Installing and compiling the openssl crypto libraries in MinGW}
+
+You may need to install the openssl crypto libraries specifically, if you don't
+have them already.  The basic version of MinGW has the executable files for
+various openssl functions.  (Try typing openssl at the command prompt.)
+However, in order to call the cryptography libraries from within your C
+program, you need the ``dev'' versions of msys-libcrypt, msys-libopenssl and
+msys-openssl.  This gives you the header files, which you can then include.
+
+For example, here's the stub for SHA512:
+
+\begin{verbatim}
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+#include <openssl/sha.h>
+
+int main(int argc, char *argv[]) {
+   int i, length;
+   unsigned char data[] = "test data";
+   unsigned char hash[SHA512_DIGEST_LENGTH];
+
+   length = strlen((char *) data);
+   SHA512(data, length, hash);
+
+   for(i=0 ; i < SHA512_DIGEST_LENGTH ; i++) {
+     printf("%02x", hash[i]);
+   }
+
+   putchar('\n');
+
+   return 0;
+}
+\end{verbatim}
+
+On a default implementation of MinGW, this compiles with the command
+\begin{verbatim}
+gcc –Wall –IC:/MinGW/msys/1.0/include –o sha512test sha512test.c –lcrypto –LC:/MinGW/msys/1.0/lib
+\end{verbatim}
+
+The -I option tells the compiler where to find the included *.h files;
+the -L option tells the linker where to find the library.
+If your installation is slightly different from mine,
+you might have to look for the right directories.
+} % end commentOut
+
+
+\paragraph{Academic honesty:}
+All work is to be done on an individual basis.
+You may discuss ideas with other students but you must write your code and your report individually and
+independently.
+Any code or ideas sourced from third parties must be
+attributed.
+Please see the Subject Information Sheet for more information.
+Where academic misconduct is detected,
+students will be referred to the School of Engineering for handling under the University Discipline procedures.
+
+\end{document}

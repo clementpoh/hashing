@@ -8,7 +8,7 @@
 #define MAX_LINE_LEN 256
 
 /* Create a new arbitrary hash table */
-static HT new_hash(unsigned int size, Hash h1, Hash h2, Eq eq, Parse parse, Print print);
+static HT new_hash(unsigned int size, Hash h1, Hash h2, Type type);
 
 /* Printing function used for open address hash tables */
 static void open_address_print(Print print, FILE *file, Bucket b);
@@ -20,27 +20,26 @@ static Bucket double_find(HT ht, unsigned int hash, Elem e);
 static Bucket *double_next_empty(HT ht, unsigned int hash, Elem e);
 
 /* Create a new arbitrary hash table */
-static HT
-new_hash(unsigned int size, Hash h1, Hash h2, Eq eq, Parse parse, Print print) {
+static HT new_hash(unsigned int size, Hash h1, Hash h2, Type type) {
     HT ht = calloc(1, sizeof(*ht));
     assert(ht);
 
     ht->table = calloc(size, sizeof(*ht->table));
     assert(ht->table);
 
-    ht->size = size;
+    ht->size  = size;
     ht->hash1 = h1;
     ht->hash2 = h2;
-    ht->eq = eq;
-    ht->parse = parse;
-    ht->print = print;
+    ht->eq    = type.eq;
+    ht->parse = type.parse;
+    ht->print = type.print;
 
     return ht;
 }
 
 /* Create a new hash table, separate chaining with arrays */
-HT new_hash_array(unsigned int size, Hash hash, Eq eq, Parse parse, Print print) {
-    HT ht = new_hash(size, hash, NULL, eq, parse, print);
+HT new_hash_array(unsigned int size, Hash hash, Type t) {
+    HT ht = new_hash(size, hash, NULL, t);
 
     ht->_insert = (bucket_insert_fn) array_insert;
     ht->_search = (bucket_search_fn) array_find;
@@ -52,8 +51,8 @@ HT new_hash_array(unsigned int size, Hash hash, Eq eq, Parse parse, Print print)
 }
 
 /* Create an empty hash table, using arrays for separate chaining */
-HT new_hash_array_MTF(unsigned int size, Hash hash, Eq eq, Parse parse, Print print) {
-    HT ht = new_hash(size, hash, NULL, eq, parse, print);
+HT new_hash_array_MTF(unsigned int size, Hash hash, Type t) {
+    HT ht = new_hash(size, hash, NULL, t);
 
     ht->_insert = (bucket_insert_fn) array_insert_MTF;
     ht->_search = (bucket_search_fn) array_find_MTF;
@@ -66,8 +65,8 @@ HT new_hash_array_MTF(unsigned int size, Hash hash, Eq eq, Parse parse, Print pr
 }
 
 /* Create a hash table, separate chaining with linked lists */
-HT new_hash_list(unsigned int size, Hash hash, Eq eq, Parse parse, Print print) {
-    HT ht = new_hash(size, hash, NULL, eq, parse, print);
+HT new_hash_list(unsigned int size, Hash hash, Type t) {
+    HT ht = new_hash(size, hash, NULL, t);
 
     ht->_insert = (bucket_insert_fn) list_insert;
     ht->_search = (bucket_search_fn) list_find;
@@ -78,8 +77,8 @@ HT new_hash_list(unsigned int size, Hash hash, Eq eq, Parse parse, Print print) 
     return ht;
 }
 
-HT new_hash_list_MTF(unsigned int size, Hash hash, Eq eq, Parse parse, Print print) {
-    HT ht = new_hash(size, hash, NULL, eq, parse, print);
+HT new_hash_list_MTF(unsigned int size, Hash hash, Type t) {
+    HT ht = new_hash(size, hash, NULL, t);
 
     ht->_insert = (bucket_insert_fn) list_prepend;
     ht->_search_MTF = (bucket_search_MTF_fn) list_find_MTF;
@@ -92,8 +91,8 @@ HT new_hash_list_MTF(unsigned int size, Hash hash, Eq eq, Parse parse, Print pri
 }
 
 /* Create an empty hash table with open addressing using double hashing */
-HT new_hash_double(unsigned int size, Hash h1, Hash h2, Eq eq, Parse parse, Print print) {
-    HT ht = new_hash(size, h1, h2, eq, parse, print);
+HT new_hash_double(unsigned int size, Hash h1, Hash h2, Type t) {
+    HT ht = new_hash(size, h1, h2, t);
 
     ht->_print = (bucket_print_fn) open_address_print;
     ht->method = DOUBLE;
@@ -101,8 +100,8 @@ HT new_hash_double(unsigned int size, Hash h1, Hash h2, Eq eq, Parse parse, Prin
     return ht;
 }
 
-HT new_hash_linear(unsigned int size, Hash hash, Eq eq, Parse parse, Print print) {
-    return new_hash_double(size, hash, linear_probe, eq, parse, print);
+HT new_hash_linear(unsigned int size, Hash hash, Type t) {
+    return new_hash_double(size, hash, linear_probe, t);
 }
 
 static void open_address_print(Print print, FILE *file, Bucket b) {
@@ -178,11 +177,13 @@ void hash_print(HT ht, FILE *file) {
     }
 
     fprintf(file, "Collision resolution: %s\n", m);
-    fprintf(file, "Move to front: %d\n", ht->MTF);
+    if (ht->MTF)
+        fprintf(file, "Move to front\n");
+
     fprintf(file, "size: %d\n", ht->size);
 
     for (unsigned int i = 0; i < ht->size; i++) {
-        fprintf(file, "%d: ", i);
+        fprintf(file, "%3d:", i);
         ht->_print(ht->print, file, ht->table[i]);
         fprintf(file, "\n");
     }
