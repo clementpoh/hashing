@@ -55,12 +55,12 @@ tags:
 	ctags -w $(SRC)
 
 ints: $(TARGET)
-	./ass2 -h n -m test/ints.in -p
+	./ass2 -h b -m test/ints.in -p
 
 test: $(TARGET)
-	./ass2 -h u -m -t s test/str.in -f test/search.in -p
+	./ass2 -h b -m -t s test/str.in -f test/search.in -p
 
 collide: $(TARGET)
-	./ass2 -h u -t s -c 1 test/str.in
+	./ass2 -h u -t s -c d test/str.in
 
 $(OBJ): $(HDR)

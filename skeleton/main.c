@@ -136,6 +136,11 @@ static Options load_options(int argc, char *argv[]) {
         opts.hash = (Hash) universal_hash;
     }
 
+    if (opts.hash == (Hash) bad_hash && !opts.string) {
+        fprintf(stderr, "-h b: expecting strings\n");
+        opts.string = true;
+    }
+
     opts.insert = argv[optind];
 
     return opts;
