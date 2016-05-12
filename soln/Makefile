@@ -41,7 +41,7 @@ submission: $(SUBMIT)
 
 .PHONY: clean
 clean:
-	rm -f $(OBJ)
+	rm -f $(OBJ) $(TARGET).s
 
 .PHONY: clobber
 clobber: clean
@@ -53,6 +53,9 @@ usage: $(TARGET)
 
 tags:
 	ctags -w $(SRC)
+
+assembly: $(TARGET)
+	objdump -S -M i386 $(TARGET) > $(TARGET).s
 
 ints: $(TARGET)
 	./ass2 -h b -m test/ints.in -p

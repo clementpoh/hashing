@@ -55,7 +55,7 @@ tags:
 	ctags -w $(SRC)
 
 ints: $(TARGET)
-	./ass2 -h b -m test/ints.in -p
+	./ass2 -h n -m test/ints.in -p
 
 test: $(TARGET)
 	./ass2 -h b -m -t s test/str.in -f test/search.in -p
