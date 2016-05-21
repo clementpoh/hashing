@@ -1,4 +1,5 @@
 ass2
+soln
 tags
 *.o
 *.swp
@@ -13,3 +14,5 @@ test/*.rev
 test/*.dfs
 test/*.kahn
 test/*.rand
+
+subs
