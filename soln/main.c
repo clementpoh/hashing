@@ -33,6 +33,7 @@ typedef struct {
     bool string;
     bool print;
     void (*coll)(unsigned int, unsigned int, int);
+    int generate;
 } Options;
 
 /* Print usage message and exit */
@@ -57,6 +58,7 @@ static void usage_exit(char *bin) {
     fprintf(stderr, "  -t s     Expect strings as input\n");
     fprintf(stderr, "  -p       Print the hash table to stdout\n");
     fprintf(stderr, "  -n size  Expected input size [default: 11]\n");
+    fprintf(stderr, "  -g num   Number of collision strings to generate\n");
     fprintf(stderr, "Collision resolution method:\n");
     fprintf(stderr, "  -r c     Chaining with a linked list [default]\n");
     fprintf(stderr, "  -r a     Chaining with an array\n");
@@ -91,9 +93,10 @@ static Options load_options(int argc, char *argv[]) {
         .hash   = worst_hash,
         .print  = false,
         .coll   = NULL,
+        .generate = NUM_COLLISIONS,
     };
 
-    while ((c = getopt(argc, argv, "c:f:h:mn:pr:s:t:")) != -1) {
+    while ((c = getopt(argc, argv, "c:f:g:h:mn:pr:s:t:")) != -1) {
         switch (c) {
             case 'h':
                 switch (optarg[0]) {
@@ -115,11 +118,12 @@ static Options load_options(int argc, char *argv[]) {
                     case 'l': opts.method = LINEAR;     break;
                     default: usage_exit(opts.bin);
                 } break;
-            case 'f': opts.find = optarg;       break;
-            case 'm': opts.MTF = true;          break;
-            case 'n': opts.size = atoi(optarg); break;
-            case 'p': opts.print = true;        break;
-            case 's': opts.seed = atoi(optarg); break;
+            case 'f': opts.find = optarg;           break;
+            case 'g': opts.generate = atoi(optarg); break;
+            case 'm': opts.MTF = true;              break;
+            case 'n': opts.size = atoi(optarg);     break;
+            case 'p': opts.print = true;            break;
+            case 's': opts.seed = atoi(optarg);     break;
             case 't': opts.string = optarg[0] == 's'; break;
             case '?':
             default: usage_exit(opts.bin);
@@ -166,7 +170,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (opts.coll)
-        opts.coll(ht->size, opts.seed, NUM_COLLISIONS);
+        opts.coll(ht->size, opts.seed, opts.generate);
 
     if (opts.print)
         hash_print(ht, stdout);

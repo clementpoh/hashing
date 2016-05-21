@@ -46,22 +46,21 @@ unsigned int bad_hash(char *key, unsigned int size) {
 
 /* Universal hash function as described in Dasgupta et al 1.5.2 */
 unsigned int universal_hash(unsigned char *key, unsigned int size) {
-    static int cs[MAXSTRLEN];
+    static int coefficients[MAXSTRLEN];
 
-    if (!cs[0]) {
-        init_universal(cs, MAXSTRLEN, size);
-    }
+    if (!coefficients[0])
+        init_universal(coefficients, MAXSTRLEN, size);
 
     unsigned int hash = 0;
     for (int i = 0; i < MAXSTRLEN && key[i]; i++)
-        hash += cs[i] * key[i];
+        hash += coefficients[i] * key[i];
 
     return hash % size;
 }
 
 /* Initialise universal hash coefficients into cs */
-static void init_universal(int cs[], int len, int size) {
+static void init_universal(int coefficients[], int len, int size) {
     for (int i = 0; i < len; i++) {
-        cs[i] = rand() % size;
+        coefficients[i] = rand() % size;
     }
 }

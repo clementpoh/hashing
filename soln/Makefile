@@ -31,7 +31,7 @@ SRC		= $(HDR:.h=.c) main.c
 OBJ     = $(SRC:.c=.o)
 
 # The executable name
-TARGET	= ass2
+TARGET	= soln
 
 $(TARGET): $(OBJ) Makefile
 	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ) $(LIB)
@@ -58,12 +58,15 @@ assembly: $(TARGET)
 	objdump -S -M i386 $(TARGET) > $(TARGET).s
 
 ints: $(TARGET)
-	./ass2 -h b -m test/ints.in -p
+	./$(TARGET) -p ints.in
+
+test1: $(TARGET)
+	./$(TARGET) -t s -p ints.in
 
 test: $(TARGET)
-	./ass2 -h b -m -t s test/str.in -f test/search.in -p
+	./$(TARGET) -h b -m -t s test/str.in -f test/search.in -p
 
 collide: $(TARGET)
-	./ass2 -h u -t s -c d test/str.in
+	./$(TARGET) -h u -t s -c d -g 1500 test/str.in
 
 $(OBJ): $(HDR)
