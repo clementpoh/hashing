@@ -52,6 +52,7 @@ HT new_hash_array(unsigned int size, Hash hash, Type t) {
 
     ht->_insert = (bucket_insert_fn) array_insert;
     ht->_search = (bucket_search_fn) array_find;
+    ht->_delete = (bucket_delete_fn) array_delete;
     ht->_print = (bucket_print_fn) array_fprint;
 
     ht->method = ARRAY;
@@ -65,6 +66,7 @@ HT new_hash_array_MTF(unsigned int size, Hash hash, Type t) {
 
     ht->_insert = (bucket_insert_fn) array_insert_MTF;
     ht->_search = (bucket_search_fn) array_find_MTF;
+    ht->_delete = (bucket_delete_fn) array_delete;
     ht->_print = (bucket_print_fn) array_fprint;
 
     ht->method = ARRAY;
@@ -79,6 +81,7 @@ HT new_hash_list(unsigned int size, Hash hash, Type t) {
 
     ht->_insert = (bucket_insert_fn) list_insert;
     ht->_search = (bucket_search_fn) list_find;
+    ht->_delete = (bucket_delete_fn) list_del;
     ht->_print = (bucket_print_fn) list_fprint;
 
     ht->method = LIST;
@@ -91,6 +94,7 @@ HT new_hash_list_MTF(unsigned int size, Hash hash, Type t) {
 
     ht->_insert = (bucket_insert_fn) list_prepend;
     ht->_search_MTF = (bucket_search_MTF_fn) list_find_MTF;
+    ht->_delete = (bucket_delete_fn) list_del;
     ht->_print = (bucket_print_fn) list_fprint;
 
     ht->method = LIST;
@@ -167,7 +171,7 @@ void hash_search_file(HT ht, FILE *file) {
         ht->print(stdout, k);
 
         printf(", starting in %d, %s\n"
-                ,ht->hash1(k, ht->size), !v ? "not found" : "found");
+                , ht->hash1(k, ht->size), !v ? "not found" : "found");
     }
 }
 

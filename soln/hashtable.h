@@ -60,6 +60,9 @@ typedef Elem (*bucket_insert_fn)(Bucket *b, Elem e);
 /* Prints the whole contents of b to f, using print on each element */
 typedef void (*bucket_print_fn)(Print print, FILE *f, Bucket b);
 
+/* Deletes e from bucket b */
+typedef void (*bucket_delete_fn)(Eq eq, Bucket *b, Elem e);
+
 /* The hash table collision resolution method, used for printing */
 typedef enum {
     LIST,
@@ -104,6 +107,7 @@ struct hash_table_t {
     bucket_search_MTF_fn _search_MTF;
     bucket_insert_fn _insert;
     bucket_print_fn _print;
+    bucket_delete_fn _delete;
 
     /* The following fields aren't necessary, useful for printing */
     Chain method;
