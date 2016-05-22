@@ -10,7 +10,7 @@ SOLNDIR	= soln
 SUBDIR	= subs
 SCRIPTS = scripts
 TESTDIR	= test
-SKELDIR = skeleton
+SCAFDIR = scaffold
 
 # Solution binaries
 SOLN	= $(SOLNDIR)/soln
@@ -22,9 +22,9 @@ COMPILE = $(SCRIPTS)/compile.sh
 STRING  = $(SCRIPTS)/string.sh
 
 # Header and source files submissions depend on
-HDR		= $(wildcard $(SKELDIR)/*.h)
+HDR		= $(wildcard $(SCAFDIR)/*.h)
 BASE    = main.c list.c array.c hashtable.c
-SRC		= $(foreach src,$(BASE),$(SKELDIR)/$(src))
+SRC		= $(foreach src,$(BASE),$(SCAFDIR)/$(src))
 
 # The submission of an individual student
 SUBS	= $(shell /usr/bin/find $(SUBDIR) -mindepth 1 -maxdepth 1 -type d)

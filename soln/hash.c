@@ -48,6 +48,7 @@ unsigned int bad_hash(char *key, unsigned int size) {
 unsigned int universal_hash(unsigned char *key, unsigned int size) {
     static int coefficients[MAXSTRLEN];
 
+    // Probability of this not working is (1 / size)
     if (!coefficients[0])
         init_universal(coefficients, MAXSTRLEN, size);
 
