@@ -4,7 +4,7 @@
 # Makefile for assignment two of COMP20007 2016.
 #
 # Replace '<STUDENT-ID>' with your Student ID e.g. 269508
-STUDENTID = <STUDENT-ID>
+STUDENTID = 269508
 SUBMIT	= hash.c types.c extra.c report.pdf
 
 # Define the C compiler
@@ -66,7 +66,10 @@ test1: $(TARGET)
 test: $(TARGET)
 	./$(TARGET) -h b -m -t s test/str.in -f test/search.in -p
 
-collide: $(TARGET)
+dumb: $(TARGET)
 	./$(TARGET) -h u -t s -c d -g 1500 test/str.in
+
+clever: $(TARGET)
+	./$(TARGET) -h u -t s -c c test/str.in
 
 $(OBJ): $(HDR)

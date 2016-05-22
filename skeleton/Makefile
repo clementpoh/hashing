@@ -4,7 +4,7 @@
 # Makefile for assignment two of COMP20007 2016.
 #
 # Replace '<STUDENT-ID>' with your Student ID e.g. 269508
-STUDENTID = <STUDENT-ID>
+STUDENTID = 269508
 SUBMIT	= hash.c types.c extra.c report.pdf
 
 # Define the C compiler
@@ -23,7 +23,7 @@ CC      = gcc
 CFLAGS  = -Wall -Wextra -Wpedantic -ansi -std=c99 -m32 -O0 -g # -pg
 
 # Define any libraries to be linked
-LIB		=
+LIB		= -lm
 
 # Define the source, header and object files
 HDR		= array.h list.h hashtable.h hash.h types.h extra.h
@@ -41,7 +41,7 @@ submission: $(SUBMIT)
 
 .PHONY: clean
 clean:
-	rm -f $(OBJ)
+	rm -f $(OBJ) $(TARGET).s
 
 .PHONY: clobber
 clobber: clean
@@ -54,13 +54,22 @@ usage: $(TARGET)
 tags:
 	ctags -w $(SRC)
 
+assembly: $(TARGET)
+	objdump -S -M i386 $(TARGET) > $(TARGET).s
+
 ints: $(TARGET)
-	./ass2 -h n -m test/ints.in -p
+	./$(TARGET) -p ints.in
+
+test1: $(TARGET)
+	./$(TARGET) -t s -p ints.in
 
 test: $(TARGET)
-	./ass2 -h b -m -t s test/str.in -f test/search.in -p
+	./$(TARGET) -h b -m -t s ../../test/str.in -f ../../test/search.in -p
 
-collide: $(TARGET)
-	./ass2 -h u -t s -c d test/str.in
+dumb: $(TARGET)
+	./$(TARGET) -h u -t s -c d -g 1500 ../../str.in
+
+clever: $(TARGET)
+	./$(TARGET) -h u -t s -c c ../../test/str.in
 
 $(OBJ): $(HDR)
