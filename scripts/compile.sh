@@ -7,12 +7,12 @@
 #
 
 SCRIPTS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-SKELETON=${2:-"./skeleton"}
+SKELETON=${2:-"./scaffold"}
 SOLN=${3:-"./soln"}
 EXIT=0
 
 HDR="array.h extra.h hash.h hashtable.h list.h types.h"
-SRC="array.c hashtable.c list.c main.c"
+SRC="array.c hashtable.c list.c main.c scaffold.c"
 
 # Compile the submission
 if [ -d "$1" ]; then

@@ -27,25 +27,30 @@ LIB		= -lm
 
 # Define the source, header and object files
 HDR		= array.h list.h hashtable.h hash.h types.h extra.h
-SRC		= $(HDR:.h=.c) main.c
+SRC		= $(HDR:.h=.c)
 OBJ     = $(SRC:.c=.o)
 
 # The executable name
 TARGET	= ass2
 
-$(TARGET): $(OBJ) Makefile
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJ) $(LIB)
+all: $(TARGET) scaffold
+
+$(TARGET): $(OBJ) main.o Makefile
+	$(CC) $(CFLAGS) -o $(TARGET) main.o $(OBJ) $(LIB)
+
+scaffold: $(OBJ) scaffold.o Makefile
+	$(CC) $(CFLAGS) -o $@ scaffold.o $(OBJ) $(LIB)
 
 submission: $(SUBMIT)
 	tar -czvf $(STUDENTID).tar.gz $(SUBMIT)
 
 .PHONY: clean
 clean:
-	rm -f $(OBJ) $(TARGET).s
+	rm -f $(OBJ) $(TARGET).s $(TARGET).o scaffold.o main.o
 
 .PHONY: clobber
 clobber: clean
-	rm -f $(TARGET) tags $(STUDENTID).tar.gz
+	rm -f $(TARGET) scaffold tags $(STUDENTID).tar.gz
 
 .PHONY: usage
 usage: $(TARGET)
@@ -57,11 +62,8 @@ tags:
 assembly: $(TARGET)
 	objdump -S -M i386 $(TARGET) > $(TARGET).s
 
-ints: $(TARGET)
-	./$(TARGET) -p ints.in
-
-test1: $(TARGET)
-	./$(TARGET) -t s -p ints.in
+size: scaffold
+	if ./scaffold -n 1000 ; then echo "correct size" ; fi
 
 test: $(TARGET)
 	./$(TARGET) -h b -m -t s ../../test/str.in -f ../../test/search.in -p

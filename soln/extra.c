@@ -32,9 +32,14 @@ typedef struct {
     int x, y, d;
 } gcd;
 
-/* Generate the universal hash coefficients from seed,
- * print them and store them in coeffs */
+/* Generate coefficients from seed, print them and store them in coeffs */
 static void print_universal(int len, int seed, int size, char *coeffs);
+
+/* Generate strings len long and print n strings that hash to 0 */
+static void generate(int size, int len, char *string, int i, int *n);
+
+/* Determine the value that combined with string hashes to 0 */
+static char hash_zero(char *coeffs, char *string, int size);
 
 /* Extended Euclidean algorithm */
 static gcd extended_euclid(int a, int b);
@@ -42,8 +47,8 @@ static gcd extended_euclid(int a, int b);
 /* Recursive call of extended Euclidean algorithm*/
 static gcd euclid(int a, int b);
 
-/* Determine the value that combined with string hashes to 0 */
-static char hash_zero(char *coeffs, char *string, int size);
+/* Replicates the universal hash of string. */
+static int replicate_hash(char *string, char *coeffs, int size);
 
 /* Determine appropriate size of a hash table given input size n */
 unsigned int determine_size(unsigned int n) {
@@ -54,9 +59,8 @@ unsigned int determine_size(unsigned int n) {
 static unsigned int next_prime(unsigned int n) {
     n = n % 2 ? n : n + 1;
 
-    while (!is_prime(n)) {
+    while (!is_prime(n))
         n = n + 2;
-    }
 
     return n;
 }
@@ -73,8 +77,18 @@ static bool is_prime(int n) {
     return true;
 }
 
-/* Generate the universal hash coefficients from seed,
- * print them and store them in coeffs */
+/* Print n strings that are hashed to 0 by universal_hash seeded with seed */
+void collide_dumb(unsigned int size, unsigned int seed, int n) {
+    char string[MAXSTRLEN] = { '\0' };
+    char coeffs[MAXSTRLEN];
+
+    print_universal(MAXSTRLEN, seed, size, coeffs);
+    for (int len = 1; len < MAXSTRLEN && n > 0; len++) {
+        generate(size, len, string, 0, &n);
+    }
+}
+
+/* Generate coefficients from seed, print them and store them in coeffs */
 static void print_universal(int len, int seed, int size, char *coeffs) {
     // Print the number of coefficients
     printf("%d\n", len);
@@ -87,9 +101,9 @@ static void print_universal(int len, int seed, int size, char *coeffs) {
     }
 }
 
-/* Generate strings len long and print the ones that hash to 0
- * Stop when n reaches 0
- * Referenced: http://codereview.stackexchange.com/q/38474 */
+/* Generate strings len long and print n strings that hash to 0
+ * Referenced: http://codereview.stackexchange.com/q/38474
+ * */
 static void generate(int size, int len, char *string, int i, int *n) {
     // Constrain characters between A and z
     // to allow all characters: (char c = 1; c > 0 && *n > 0; c++)
@@ -105,62 +119,10 @@ static void generate(int size, int len, char *string, int i, int *n) {
     }
 }
 
-/* Print n strings that are hashed to 0 by universal_hash seeded with seed */
-void collide_dumb(unsigned int size, unsigned int seed, int n) {
-    char string[MAXSTRLEN] = { '\0' };
-    char coeffs[MAXSTRLEN];
-
-    print_universal(MAXSTRLEN, seed, size, coeffs);
-    for (int len = 1; len < MAXSTRLEN && n > 0; len++) {
-        generate(size, len, string, 0, &n);
-    }
-}
-
-/* Extended Euclidean algorithm */
-static gcd extended_euclid(int a, int b) {
-    #ifndef MAX
-        #define MAX( a, b ) ( ((a) > (b)) ? (a) : (b) )
-        #define MIN( a, b ) ( ((a) < (b)) ? (a) : (b) )
-    #endif
-    return euclid(MAX(a, b), MIN(a, b));
-}
-
-/* Recursive call of extended Euclidean algorithm */
-static gcd euclid(int a, int b) {
-    if (!b) return (gcd) { 1, 0, a };
-
-    gcd e = euclid(b, a % b);
-    return (gcd) { e.y, e.x - (a / b) * e.y, e.d };
-}
-
-/* Replicates the universal hash of string. Can't call universal hash directly
- * because of coefficient offset */
-static int replicate_hash(char *string, char *coeffs, int size) {
-    int hash = 0;
-
-    for (int i = 0; i < MAXSTRLEN && string[i]; i++)
-        hash += coeffs[i] * string[i];
-
-    return hash % size;
-}
-
-static char hash_zero(char *coeffs, char *string, int size) {
-    gcd euclid = extended_euclid(size, coeffs[0]);
-
-    // euclid.y + size to ensure it's positive
-    euclid.y = (euclid.y + size) % size;
-
-    // Replicate the universal_hash from the string + 1
-    int hash = replicate_hash(string + 1, coeffs + 1, size);
-
-    int y = (euclid.y * (size - hash) / euclid.d) % size;
-    return y + size * (1 + (MINCHAR - y) / size);
-}
-
 /* Print n strings that are hashed to 0 by universal_hash seeded with seed
  *
- * Proof of concept: Assumes the first universal hash coefficient is non-zero.
- * Only works with strings between A and z.
+ * - Assumes the first universal hash coefficient is non-zero.
+ * - Only works with strings consisting of characters between A and z.
  * */
 void collide_clever(unsigned int size, unsigned int seed, int n) {
     char string[MAXSTRLEN] = { '\0' };
@@ -188,3 +150,45 @@ void collide_clever(unsigned int size, unsigned int seed, int n) {
         printf("%2d %s\n", universal_hash((unsigned char *)string, size), string);
     }
 }
+
+static char hash_zero(char *coeffs, char *string, int size) {
+    gcd euclid = extended_euclid(size, coeffs[0]);
+
+    // euclid.y + size to ensure it's positive
+    euclid.y = (euclid.y + size) % size;
+
+    // Replicate the universal_hash from the string + 1
+    // Can't call universal hash directly because of coefficient offset
+    int hash = replicate_hash(string + 1, coeffs + 1, size);
+
+    int y = (euclid.y * (size - hash) / euclid.d) % size;
+    return y + size * (1 + (MINCHAR - y) / size);
+}
+
+/* Extended Euclidean algorithm */
+static gcd extended_euclid(int a, int b) {
+    #ifndef MAX
+        #define MAX(a, b) ( ((a) > (b)) ? (a) : (b) )
+        #define MIN(a, b) ( ((a) < (b)) ? (a) : (b) )
+    #endif
+    return euclid(MAX(a, b), MIN(a, b));
+}
+
+/* Recursive call of extended Euclidean algorithm */
+static gcd euclid(int a, int b) {
+    if (!b) return (gcd) { 1, 0, a };
+
+    gcd e = euclid(b, a % b);
+    return (gcd) { e.y, e.x - (a / b) * e.y, e.d };
+}
+
+/* Replicates the universal hash of string. */
+static int replicate_hash(char *string, char *coeffs, int size) {
+    int hash = 0;
+
+    for (int i = 0; i < MAXSTRLEN && string[i]; i++)
+        hash += coeffs[i] * string[i];
+
+    return hash % size;
+}
+
