@@ -10,11 +10,12 @@
 #include "hash.h"
 
 #include <stdlib.h>
+#include <assert.h>
 
 #define MAXSTRLEN 256
 
-/* Initialise universal hash coefficients into cs */
-static void init_universal(int cs[], int len, int size);
+/* Initialise universal hash coefficients and return a pointer to them */
+static int *init_universal(int len, int size);
 
 /* Used as the second hashing function on double hash */
 unsigned int linear_probe(void *e, unsigned int size) {
@@ -46,22 +47,25 @@ unsigned int bad_hash(char *key, unsigned int size) {
 
 /* Universal hash function as described in Dasgupta et al 1.5.2 */
 unsigned int universal_hash(unsigned char *key, unsigned int size) {
-    static int coefficients[MAXSTRLEN];
+    static int *coeffs = NULL;
 
-    // Probability of this not working is (1 / size)
-    if (!coefficients[0])
-        init_universal(coefficients, MAXSTRLEN, size);
+    if (!coeffs)
+        coeffs = init_universal(MAXSTRLEN, size);
 
     unsigned int hash = 0;
     for (int i = 0; i < MAXSTRLEN && key[i]; i++)
-        hash += coefficients[i] * key[i];
+        hash += coeffs[i] * key[i];
 
     return hash % size;
 }
 
-/* Initialise universal hash coefficients into cs */
-static void init_universal(int coefficients[], int len, int size) {
-    for (int i = 0; i < len; i++) {
-        coefficients[i] = rand() % size;
-    }
+/* Initialise universal hash coefficients and return a pointer to them. */
+static int *init_universal(int len, int size) {
+    int *coeffs = calloc(MAXSTRLEN, sizeof(*coeffs));
+    assert(coeffs);
+
+    for (int i = 0; i < len; i++)
+        coeffs[i] = rand() % size;
+
+    return coeffs;
 }

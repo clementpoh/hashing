@@ -14,10 +14,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <limits.h>
 
 #define MAXSTRLEN 256
 #define MINLEN 3
+
+#define MINCHAR 'A'
+#define MAXCHAR 'z'
 
 /* Return the next prime greater than or equal to n */
 static unsigned int next_prime(unsigned int n);
@@ -32,7 +34,7 @@ typedef struct {
 
 /* Generate the universal hash coefficients from seed,
  * print them and store them in coeffs */
-static void get_coefficients(int len, int seed, int size, char *coeffs);
+static void print_universal(int len, int seed, int size, char *coeffs);
 
 /* Extended Euclidean algorithm */
 static gcd extended_euclid(int a, int b);
@@ -40,8 +42,8 @@ static gcd extended_euclid(int a, int b);
 /* Recursive call of extended Euclidean algorithm*/
 static gcd euclid(int a, int b);
 
-/* Determine the char that when combined with str will hash to 0 */
-static char hash_zero(char *coeffs, char *str, int size);
+/* Determine the value that combined with string hashes to 0 */
+static char hash_zero(char *coeffs, char *string, int size);
 
 /* Determine appropriate size of a hash table given input size n */
 unsigned int determine_size(unsigned int n) {
@@ -73,10 +75,11 @@ static bool is_prime(int n) {
 
 /* Generate the universal hash coefficients from seed,
  * print them and store them in coeffs */
-static void get_coefficients(int len, int seed, int size, char *coeffs) {
+static void print_universal(int len, int seed, int size, char *coeffs) {
     // Print the number of coefficients
     printf("%d\n", len);
 
+    // Reseed the randon number generator
     srand(seed);
     for (int i = 0; i < len; i++) {
         coeffs[i] = rand() % size;
@@ -90,7 +93,7 @@ static void get_coefficients(int len, int seed, int size, char *coeffs) {
 static void generate(int size, int len, char *string, int i, int *n) {
     // Constrain characters between A and z
     // to allow all characters: (char c = 1; c > 0 && *n > 0; c++)
-    for (unsigned char c = 'A'; c <= 'z' && *n > 0; c++) {
+    for (unsigned char c = MINCHAR; c <= MAXCHAR && *n > 0; c++) {
         string[i] = c;
 
         if (i == len - 1) {
@@ -107,7 +110,7 @@ void collide_dumb(unsigned int size, unsigned int seed, int n) {
     char string[MAXSTRLEN] = { '\0' };
     char coeffs[MAXSTRLEN];
 
-    get_coefficients(MAXSTRLEN, seed, size, coeffs);
+    print_universal(MAXSTRLEN, seed, size, coeffs);
     for (int len = 1; len < MAXSTRLEN && n > 0; len++) {
         generate(size, len, string, 0, &n);
     }
@@ -141,41 +144,43 @@ static int replicate_hash(char *string, char *coeffs, int size) {
     return hash % size;
 }
 
-static char hash_zero(char *coeffs, char *str, int size) {
+static char hash_zero(char *coeffs, char *string, int size) {
     gcd euclid = extended_euclid(size, coeffs[0]);
 
     // euclid.y + size to ensure it's positive
     euclid.y = (euclid.y + size) % size;
 
-    // Replicate the universal_hash from the str + 1
-    int hash = replicate_hash(str + 1, coeffs + 1, size);
+    // Replicate the universal_hash from the string + 1
+    int hash = replicate_hash(string + 1, coeffs + 1, size);
 
     int y = (euclid.y * (size - hash) / euclid.d) % size;
-
-    return y + size * (1 + ('A' - y) / size);
+    return y + size * (1 + (MINCHAR - y) / size);
 }
 
 /* Print n strings that are hashed to 0 by universal_hash seeded with seed
- * Assumes the first universal hash coefficient is non-zero */
+ *
+ * Proof of concept: Assumes the first universal hash coefficient is non-zero.
+ * Only works with strings between A and z.
+ * */
 void collide_clever(unsigned int size, unsigned int seed, int n) {
     char string[MAXSTRLEN] = { '\0' };
     char coeffs[MAXSTRLEN];
     int len, c = 0;
 
-    if (size > UCHAR_MAX) {
-        fprintf(stderr, "%d exceeds the allowable hash size: %d\n", size, UCHAR_MAX);
+    if (size > next_prime(MAXCHAR)) {
+        fprintf(stderr, "%d exceeds limit: %d\n", size, next_prime(MAXCHAR));
         exit(EXIT_FAILURE);
     }
 
-    get_coefficients(MAXSTRLEN, seed, size, coeffs);
+    print_universal(MAXSTRLEN, seed, size, coeffs);
     for (int i = 0; i < n; i++) {
-        // Generate a random string
+        // Generate a random string at least MINLEN long
         len = rand() % (MAXSTRLEN - MINLEN) + MINLEN;
         string[len] = '\0';
 
         // Constrain the characters to between A to z
         for(int j = 0; j < len; j++)
-            string[j] = rand() % ('z' - 'A') + 'A';
+            string[j] = rand() % (MAXCHAR - MINCHAR) + MINCHAR;
 
         // string[c] now hashes to zero
         string[c] = hash_zero(coeffs, string, size);
