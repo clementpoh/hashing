@@ -160,6 +160,8 @@ static char hash_zero(int *coeffs, char *string, int size, int c) {
     int hash = universal_hash((unsigned char*)string, size);
     hash -= coeffs[c] * (unsigned char) string[c] % size;
 
+    // size is prime so euclid.y * coeffs % size = 1
+    // So hash + (size - hash) * 1 = size % size = 0
     return (size - hash) * euclid.y % size;
 }
 

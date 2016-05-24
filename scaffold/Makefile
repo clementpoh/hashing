@@ -46,11 +46,11 @@ submission: $(SUBMIT)
 
 .PHONY: clean
 clean:
-	rm -f $(OBJ) $(TARGET).s $(TARGET).o scaffold.o main.o
+	rm -f $(OBJ) $(TARGET).s $(TARGET).o scaffold.o main.o 
 
 .PHONY: clobber
 clobber: clean
-	rm -f $(TARGET) scaffold tags $(STUDENTID).tar.gz
+	rm -f tags $(STUDENTID).tar.gz $(TARGET) scaffold
 
 .PHONY: usage
 usage: $(TARGET)

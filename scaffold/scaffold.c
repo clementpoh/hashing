@@ -4,6 +4,7 @@
 #include <stdbool.h>
 
 #include "extra.h"
+#include "hash.h"
 
 /* Return the next prime greater than or equal to n */
 static unsigned int next_prime(unsigned int n);
@@ -13,18 +14,27 @@ static bool is_prime(int n);
 
 /* Print usage message and exit */
 static void usage_exit(char *bin) {
-    fprintf(stderr, "%s (-n size | d n | c n)\n", bin);
+    fprintf(stderr, "%s (-n size | -l | -d n | -c n)\n", bin);
     exit(EXIT_FAILURE);
 }
 
 int main(int argc, char *argv[]) {
-    int c, size = 0, exp, act;
-    while ((c = getopt(argc, argv, "n:")) != -1) {
+    int c, size = 0;
+    while ((c = getopt(argc, argv, "ln:")) != -1) {
         switch (c) {
+            case 'l':
+                for (long i = 0; i < 100; i++) {
+                    int h = linear_probe((void *)i, i);
+                    if (h != 1) {
+                        fprintf(stderr, "Expected: 1, Actual: %d", h);
+                        exit(EXIT_FAILURE);
+                    }
+                }
+                return 0;
             case 'n':
                 size = atoi(optarg);
-                exp = next_prime(size);
-                act = determine_size(size);
+                int exp = next_prime(size);
+                int act = determine_size(size);
                 if (exp != act) {
                     fprintf(stderr, "Expected: %d, Actual: %d", exp, act);
                     exit(EXIT_FAILURE);

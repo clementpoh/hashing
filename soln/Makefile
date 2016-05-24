@@ -67,9 +67,9 @@ test: $(TARGET)
 	./$(TARGET) -h b -m -t s test/str.in -f test/search.in -p
 
 dumb: $(TARGET)
-	./$(TARGET) -h u -t s -c d -g 1500 test/str.in
+	./$(TARGET) -h u -t s -c d -g 150 test/str.in
 
 clever: $(TARGET)
-	./$(TARGET) -h u -t s -c c test/str.in
+	./$(TARGET) -h u -t s -c c -g 150 test/str.in
 
 $(OBJ): $(HDR)

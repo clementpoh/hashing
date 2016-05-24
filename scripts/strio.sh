@@ -20,11 +20,14 @@ exit_codes()  {
     local EXIT=$1
 
     case "$EXIT" in
-        0)  # Program passed test case
-            MSG="PASS: $BIN $OPTS $INPUT\n"
-            PASS=$((PASS + 1)) ;;
-        1)  # Program failed test case
-            MSG="FAIL: $BIN $OPTS $INPUT | $(cat $ERRORS)\n" ;;
+        0)  if diff -w "$OUTPUT" "$VERIFY" &> /dev/null; then
+                MSG="PASS: $BIN $OPTS $INPUT\n"
+                PASS=$((PASS + 1))
+            else
+                MSG="FAIL: $BIN $OPTS $INPUT | diff -w $OUTPUT $VERIFY\n"
+            fi ;;
+        1)  # Indicates that program exited with EXIT_FAILURE
+            MSG="$EXIT EXIT_FAILURE $BIN $OPTS $INPUT\n";;
         3)  #  failed assertion in MinGW
             MSG="$EXIT $BIN aborted\n";;
         5)  # Seems to indicate segmentation fault in MinGW
@@ -63,12 +66,12 @@ exit_codes()  {
 # Run the submission
 if [ -d "$1" ]; then
     USER=$(basename "$1")
-    BIN="$1/scaffold"
+    BIN="$1/ass2"
     OUT="$1/out"
-    LOGFILE="$OUT/size.txt"
+    LOGFILE="$OUT/strio.txt"
 
     printf "******************************************\n" > $LOGFILE
-    printf "* Testing determine_size()\n" >> $LOGFILE
+    printf "* Working with strings: I/O\n" >> $LOGFILE
     printf "******************************************\n" >> $LOGFILE
 
     # Check whether the executable exists
@@ -78,14 +81,20 @@ if [ -d "$1" ]; then
         exit 127
     fi
 
-    INPUTS="0 8 32 4096"
+    INPUTS="$TESTS/*.in"
     for INPUT in $INPUTS; do
-        OPTS="-n"
+        BASE=$(basename $INPUT ".in")
+        # Location of the output dot file
+        OUTPUT="$OUT/$BASE.out"
+        # Location of the verification file
+        VERIFY="$TESTS/$BASE.out"
+
+        OPTS="-p -t s"
 
         # Braces are for errors that originate from the shell
-        { "$TIMEOUT" "$BIN" $OPTS $INPUT 2> $ERRORS; } &> $SHELL
+        { "$TIMEOUT" "$BIN" $OPTS $INPUT > $OUTPUT 2> $ERRORS; } &> $SHELL
 
-        exit_codes $?
+        exit_codes $? $BIN $OPTS $INPUT
 
         COUNT=$((COUNT + 1))
     done

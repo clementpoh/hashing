@@ -7,6 +7,7 @@
 %\usepackage{mdwlist}
 \usepackage{enumitem}
 \usepackage{booktabs}
+\usepackage[normalem]{ulem}
 
 \setlength{\parskip}{1em}
 \oddsidemargin -9mm
@@ -33,7 +34,8 @@ DEPARTMENT OF COMPUTING AND INFORMATION SYSTEMS\vspace{2ex}
 {\Large\bf
 COMP20007 Design of Algorithms, Semester 1, 2016
 
-Assignment 2: Hashing
+Assignment 2: Hashing (Update 11 May)
+
 }\vspace{2ex}
 
 Due: 5pm Friday 20th May
@@ -107,7 +109,7 @@ hash table to work with generic pointers, but provided interfaces to work with
 of hash functions from Dasgupta 1.5.2.
 
 \begin{description}
-    \item[A)Data type:]
+    \item[\bf A) Data type:]
         The functions {\tt int\_eq()}, {\tt int\_print()},
         and the standard library function {\tt atoi} enable the hash table to work with {\tt int}s,
         by treating the pointers as {\tt int}s.
@@ -116,7 +118,7 @@ of hash functions from Dasgupta 1.5.2.
         and {\tt str\_print()} in {\tt types.c} to enable the hash table to work with
         strings by treating the input generic pointers as {\tt char *}.
 
-    \item[B) Code size:]
+    \item[\bf B) Code size:]
         The existing code simply makes the hash table the same size as the command-line argument ``size''.
         Now assume that the command-line input is the maximum expected number of elements,
         implement {\tt determine\_size()} in {\tt extra.c} to choose a hash table {\tt size}
@@ -130,7 +132,7 @@ of hash functions from Dasgupta 1.5.2.
 The rest of the assignment assumes the hash table uses separate chaining with linked lists, but \emph{this question only} considers linear probing.   (The workshop contrasted open addressing with double hashing approach against the separate chaining collision resolution methods.)
 
 \begin{description}
-    \item[C) Linear probing:]
+    \item[\bf C) Linear probing:]
         The hash table of the assignment also implements double hashing.
         Implement the function {\tt linear\_probing} in {\tt hash.c}
         so when it's used as the second hash function of a double hashing hash table it performs linear probing as its collision resolution method.
@@ -176,13 +178,15 @@ within functions in C to achieve consistency of hash functions.
         and using it like this:
 
 \begin{verbatim}
-bad_hash(Key k, unsigned int size) {
+bad_hash(char *, unsigned int size) {
      /* Generate random a here */
     return a * key[0] % size;
 }
 \end{verbatim}
 
         A stub for {\tt bad\_hash} resides in {\tt hash.c}.  Complete it.
+
+{\bf NEW: } Assume that {\tt bad\_hash} only has to work with string input.  (Of course, it should fail gracefully if not.)
 
 \end{description}
 
@@ -198,7 +202,7 @@ bad_hash(Key k, unsigned int size) {
         Think of a string as an array of \texttt{unsigned char}.
         You can assume a maximum string length, {\tt MAXSTRLEN}.
         Assuming that {\tt srand} has been seeded with {\tt seed} as above,
-        generate a list of random integers $r_0, r_1, \ldots, r_{{\tt MAXSTRLEN}}$
+        generate a list of random integers $r_0, r_1, \ldots, r_{{\tt MAXSTRLEN}-1}$
         in the range $\{0,1,\ldots,{\tt size-1}\}$.
 
         Define {\tt universal\_hash(Key k, unsigned int size) } to implement:
@@ -223,7 +227,7 @@ bad_hash(Key k, unsigned int size) {
 \end{enumerate}
 
 \begin{description}
-    \item[F) Generating collisions by trial and error: ]
+    \item[\bf E) Generating collisions by trial and error:]
         Suppose you're a malicious annoyance who wants to slow down the hash table to make other users' lives difficult.
         Suppose also that the $r_i$ values for universal-hash are made public.
         Write a function
@@ -240,6 +244,13 @@ bad_hash(Key k, unsigned int size) {
 % of course, but you get the idea.)
 \end{description}
 
+{\bf NEW: } Output format: write your output to {\tt sdtout.}  It should contain:
+\begin{itemize}
+\item {\tt Num\_randoms} (The number of {\tt r[i]} values to appear), followed by $'\backslash n'$
+\item the random elements {\tt r[0], r[1],} $\ldots,$ {\tt r[Num\_randoms-1]} in order, one per line,
+\item your clashing strings, one per line.
+\end{itemize}
+
 \begin{enumerate}[resume]
 \item Explain briefly (in a few sentences) how your algorithm works.  Using big-O notation,
     write the expected running time of your algorithm,
@@ -247,18 +258,32 @@ bad_hash(Key k, unsigned int size) {
 \end{enumerate}
 
 \begin{description}
-\item[G) Generating collisions by clever maths: ]
+\item[\bf F) Generating collisions by clever maths:]
     Look at the extended Euclid algorithm on p.21 of Dasgupta {\it et al.}
         Write a new function
         {\tt collide\_clever(unsigned int size, unsigned int seed, int n)}
         that achieves the same thing as {\tt collide\_dumb()},
         but more efficiently.
-        For full credit,
-        your strings must have only ASCII alphanumeric characters.
+        \sout{For full credit,
+        your strings must have only ASCII alphanumeric characters.}
 
        Note: your function need not necessarily work for large values of $n$.  Full marks as long as it works for
        at least $n=2$ and fails gracefully if $n$ is too large.
 \end{description}
+
+{\bf NEW: Two significant simplifications to make this easier.}
+\begin{enumerate}
+\item Assume that {\tt size} is less than the maximum value of char.  (so at most 255)
+
+\item Never mind about alphanumeric chars.  Let's just  get some strings of some chars that hash to the same value.
+\end{enumerate}
+
+There's also a big hint in an announcement from 10 May.
+
+\emph{Partial} credit for two strings that hash together, but not to zero.
+Partial credit also for an algorithm that works for many, but not all, possible values of {\tt r[0], r[1], \ldots}.
+
+{\bf NEW: } Output format: same as (E).
 
 \begin{enumerate}[resume]
 \item
@@ -356,7 +381,7 @@ Then you can type \texttt{make submission} to create the required archive file.
 \paragraph{Marking:}
 Half the marks are for your code and half are for your report.
 
-The seven coding parts (A through G) of the assignment will be marked for correctness and clarity.
+The seven coding parts (A0 through F) of the assignment will be marked for correctness and clarity.
 You will lose a mark if your submission does not identify you in the opening comment of each submitted file;
 you will lose a mark if your solution is incorrect in some way
 (breaks on certain inputs, has memory leaks, requires fixing to work at all);
