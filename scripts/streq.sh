@@ -68,7 +68,7 @@ if [ -d "$1" ]; then
     USER=$(basename "$1")
     BIN="$1/ass2"
     OUT="$1/out"
-    LOGFILE="$OUT/stringio.txt"
+    LOGFILE="$OUT/streq.txt"
 
     printf "************************************************\n" > $LOGFILE
     printf "* Working with strings: str_copy() and str_eq()\n" >> $LOGFILE
