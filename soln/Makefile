@@ -64,12 +64,15 @@ test1: $(TARGET)
 	./$(TARGET) -t s -p ints.in
 
 test: $(TARGET)
-	./$(TARGET) -h b -m -t s test/str.in -f test/search.in -p
+	./$(TARGET) -h b -m -t s -p ../test/str.in -f ../test/str.keys
 
 dumb: $(TARGET)
-	./$(TARGET) -h u -t s -c d -g 150 test/str.in
+	./$(TARGET) -h u -t s -c d -g 150 ../test/str.in
 
 clever: $(TARGET)
-	./$(TARGET) -h u -t s -c c -g 150 test/str.in
+	./$(TARGET) -h u -t s -c c -g 150 ../test/str.in
+
+bug: $(TARGET)
+	./$(TARGET) -h u -t s -c c -s 2 -g 1 -n 300 ../test/str.in
 
 $(OBJ): $(HDR)

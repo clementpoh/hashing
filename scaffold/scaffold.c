@@ -6,6 +6,12 @@
 #include "extra.h"
 #include "hash.h"
 
+/* Tests the linear_probe hash function */
+static bool test_probing(void);
+
+/* Tests the determine_size function */
+static bool test_size(int size);
+
 /* Return the next prime greater than or equal to n */
 static unsigned int next_prime(unsigned int n);
 
@@ -19,32 +25,40 @@ static void usage_exit(char *bin) {
 }
 
 int main(int argc, char *argv[]) {
-    int c, size = 0;
+    int c;
     while ((c = getopt(argc, argv, "ln:")) != -1) {
         switch (c) {
             case 'l':
-                for (long i = 0; i < 100; i++) {
-                    int h = linear_probe((void *)i, i);
-                    if (h != 1) {
-                        fprintf(stderr, "Expected: 1, Actual: %d", h);
-                        exit(EXIT_FAILURE);
-                    }
-                }
-                return 0;
+                return test_probing();
             case 'n':
-                size = atoi(optarg);
-                int exp = next_prime(size);
-                int act = determine_size(size);
-                if (exp != act) {
-                    fprintf(stderr, "Expected: %d, Actual: %d", exp, act);
-                    exit(EXIT_FAILURE);
-                }
-                return 0;
+                return test_size(atoi(optarg));
             case 'd':
             case 'c':
             default: usage_exit(argv[0]);
         }
     }
+}
+
+static bool test_probing(void) {
+    const int expect = 1;
+    for (long i = 0; i < 100; i++) {
+        int hash = linear_probe((void *)i, i);
+        if (hash != expect) {
+            fprintf(stderr, "Expected: %d, Actual: %d", expect, hash);
+            return EXIT_FAILURE;
+        }
+    }
+    return 0;
+}
+
+static bool test_size(int size) {
+    int expect = next_prime(size);
+    int actual = determine_size(size);
+    if (expect != actual) {
+        fprintf(stderr, "Expected: %d, Actual: %d", expect, actual);
+        return EXIT_FAILURE;
+    }
+    return 0;
 }
 
 /* Return the next prime greater than or equal to n */

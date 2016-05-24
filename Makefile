@@ -20,6 +20,7 @@ FOREACH = $(SCRIPTS)/foreach.sh
 UNPACK  = $(SCRIPTS)/unpack.sh
 COMPILE = $(SCRIPTS)/compile.sh
 STRIO   = $(SCRIPTS)/strio.sh
+STREQ	= $(SCRIPTS)/streq.sh
 SIZE	= $(SCRIPTS)/size.sh
 PROBE	= $(SCRIPTS)/probe.sh
 
@@ -42,12 +43,13 @@ STUDMAKE	= $(addsuffix /out/make.txt,$(SUBS))
 STUDSTRING  = $(addsuffix /out/strio.txt,$(SUBS))
 
 # Expected outputs
-HTPRINTS = $(patsubst %.in,%.out,$(wildcard $(TESTDIR)/*.in))
+STRPRINT	= $(patsubst %.in,%.out,$(wildcard $(TESTDIR)/*.in))
+STRFIND		= $(patsubst %.in,%.eq,$(wildcard $(TESTDIR)/*.in))
 
 # Rules to run tests on all submissions
 
-.PHONY: all
-all: $(SOLNDIR) $(HTPRINTS) $(TESTDIR)
+.PHONY: all compile strio streq size probe
+all: $(SOLNDIR) $(STRPRINT) $(TESTDIR)
 
 .PHONY: $(SOLNDIR)
 $(SOLNDIR): $(SOLN)
@@ -66,8 +68,12 @@ compile.log: $(COMPILE) $(HDR) $(SRC) unpack.log
 	$(FOREACH) $(COMPILE) $(SUBDIR) 2>&1 | tee $@
 
 strio: strio.log
-strio.log: $(STRIO) $(HTPRINTS) compile.log
+strio.log: $(STRIO) $(STRPRINT) compile.log
 	$(FOREACH) $(STRIO) $(SUBDIR) 2>&1 | tee $@
+
+streq: streq.log
+streq.log: $(STREQ) $(STRFIND) compile.log
+	$(FOREACH) $(STREQ) $(SUBDIR) 2>&1 | tee $@
 
 size: size.log
 size.log: $(SIZE) compile.log
@@ -79,14 +85,17 @@ probe.log: $(PROBE) compile.log
 
 # Rules to generate test cases
 .PHONY: $(TESTDIR)
-
 $(TESTDIR): $(TESTDIR)/empty $(TESTDIR)/ints.in $(TESTDIR)/str.in
 	touch $(TESTDIR)/empty
 	seq 1 50 > $(TESTDIR)/ints.in
 
-# HTPRINTS expands to the next rule
+# STRFIND expands to the next rule
+$(TESTDIR)/%.eq: $(TESTDIR)/%.in $(SOLN)
+	$(SOLN) -t s -f $(basename $<).keys $< > $@
+
+# STRPRINT expands to the next rule
 $(TESTDIR)/%.out: $(TESTDIR)/%.in $(SOLN)
-	$(SOLN) -p -t s $< > $@
+	$(SOLN) -t s -p $< > $@
 
 # Rules for an individual submission
 
@@ -95,11 +104,17 @@ $(TESTDIR)/%.out: $(TESTDIR)/%.in $(SOLN)
 $(STUDBIN): %/ass2 : %/extra.c %/types.c %/hash.c $(HDR) $(SRC)
 	-$(COMPILE) $(@D)
 
-$(STUDSTRIO): %/out/strio.txt : %/ass2 $(STRIO) $(HTPRINTS)
+$(STUDSTRIO): %/out/strio.txt : %/ass2 $(STRIO) $(STRPRINT)
 	-$(STRIO) $(subst /out,,$(@D))
 
-$(STUDSIZE): %/out/size.txt : %/ass2 $(PRINT) $(DOTS)
+$(STUDSTREQ): %/out/streq.txt : %/ass2 $(STREQ) $(STRFIND)
+	-$(STREQ) $(subst /out,,$(@D))
+
+$(STUDSIZE): %/out/size.txt : %/ass2 $(PRINT)
 	-$(SIZE) $(subst /out,,$(@D))
+
+$(STUDPROBE): %/out/probe.txt : %/ass2 $(PROBE)
+	-$(PROBE) $(subst /out,,$(@D))
 
 spec.pdf: spec.tex
 	pdflatex spec.tex && rm spec.log spec.aux
@@ -121,6 +136,10 @@ clean:
 		$(SUBDIR)/**/scaffold.c \
 		$(SUBDIR)/**/Makefile
 
+nearlyclean: clean
+	-rm -rf test/*.eq test/*.out
+
 .PHONY: clobber
-clobber: clean
-	-rm -rf $(SUBDIR)/**/out
+clobber: nearlyclean
+	-rm -rf *.log \
+	   	$(SUBDIR)/**/out

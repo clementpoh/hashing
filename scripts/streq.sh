@@ -68,11 +68,11 @@ if [ -d "$1" ]; then
     USER=$(basename "$1")
     BIN="$1/ass2"
     OUT="$1/out"
-    LOGFILE="$OUT/strio.txt"
+    LOGFILE="$OUT/stringio.txt"
 
-    printf "***************************************************\n" > $LOGFILE
-    printf "* Working with strings: str_copy() and str_print()\n" >> $LOGFILE
-    printf "***************************************************\n" >> $LOGFILE
+    printf "************************************************\n" > $LOGFILE
+    printf "* Working with strings: str_copy() and str_eq()\n" >> $LOGFILE
+    printf "************************************************\n" >> $LOGFILE
 
     # Check whether the executable exists
     if [ ! -x $BIN ]; then
@@ -85,18 +85,22 @@ if [ -d "$1" ]; then
     for INPUT in $INPUTS; do
         BASE=$(basename $INPUT ".in")
         # Location of the output dot file
-        OUTPUT="$OUT/$BASE.out"
+        OUTPUT="$OUT/$BASE.eq"
         # Location of the verification file
-        VERIFY="$TESTS/$BASE.out"
+        VERIFY="$TESTS/$BASE.eq"
 
-        OPTS="-p -t s"
+        KEYS="$TESTS/$BASE.keys"
+        for KEY in $KEYS; do
 
-        # Braces are for errors that originate from the shell
-        { "$TIMEOUT" "$BIN" $OPTS $INPUT > $OUTPUT 2> $ERRORS; } &> $SHELL
+            OPTS="-t s -f $KEY"
 
-        exit_codes $? $BIN $OPTS $INPUT
+            # Braces are for errors that originate from the shell
+            { "$TIMEOUT" "$BIN" $OPTS $INPUT > $OUTPUT 2> $ERRORS; } &> $SHELL
 
-        COUNT=$((COUNT + 1))
+            exit_codes $? $BIN $OPTS $INPUT
+
+            COUNT=$((COUNT + 1))
+        done
     done
     printf "\n$PASS/$COUNT successful\n" >> $LOGFILE
 fi
