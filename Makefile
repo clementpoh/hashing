@@ -30,21 +30,25 @@ BASE    = main.c scaffold.c list.c array.c hashtable.c
 SRC		= $(foreach src,$(BASE),$(SCAFDIR)/$(src))
 
 # The submission of an individual student
-SUBS 		= $(shell /usr/bin/find $(SUBDIR) -mindepth 1 -maxdepth 1 -type d)
-STUDBIN 	= $(addsuffix /ass2,$(SUBS))
+SUBS 	= $(shell /usr/bin/find $(SUBDIR) -mindepth 1 -maxdepth 1 -type d)
+STUDBIN	= $(addsuffix /ass2,$(SUBS))
+
+# Test artifacts
+STUDSUMMARY	= $(addsuffix /summary.txt,$(SUBS))
+STUDMAKE	= $(addsuffix /out/make.txt,$(SUBS))
 STUDSTRIO 	= $(addsuffix /out/strio.txt,$(SUBS))
 STUDSTREQ 	= $(addsuffix /out/streq.txt,$(SUBS))
 STUDSIZE 	= $(addsuffix /out/size.txt,$(SUBS))
 STUDPROBE	= $(addsuffix /out/probe.txt,$(SUBS))
 
-# Test artifacts
-STUDSUMMARY	= $(addsuffix /summary.txt,$(SUBS))
-STUDMAKE	= $(addsuffix /out/make.txt,$(SUBS))
-STUDSTRING  = $(addsuffix /out/strio.txt,$(SUBS))
-
 # Expected outputs
 STRPRINT	= $(patsubst %.in,%.out,$(wildcard $(TESTDIR)/*.in))
 STRFIND		= $(patsubst %.in,%.eq,$(wildcard $(TESTDIR)/*.in))
+
+# Rules
+
+spec.pdf: spec.tex
+	pdflatex spec.tex && rm spec.log spec.aux
 
 # Rules to run tests on all submissions
 
@@ -98,6 +102,8 @@ $(TESTDIR)/%.out: $(TESTDIR)/%.in $(SOLN)
 	$(SOLN) -t s -p $< > $@
 
 # Rules for an individual submission
+.PHONY: $(SUBS)
+$(SUBS): % : %/summary.txt
 
 # Rule to compile the student binary
 .SECONDARY: $(STUDBIN)
@@ -116,8 +122,14 @@ $(STUDSIZE): %/out/size.txt : %/ass2 $(PRINT)
 $(STUDPROBE): %/out/probe.txt : %/ass2 $(PROBE)
 	-$(PROBE) $(subst /out,,$(@D))
 
-spec.pdf: spec.tex
-	pdflatex spec.tex && rm spec.log spec.aux
+$(STUDSUMMARY): %/summary.txt : %/ass2 \
+   	%/out/strio.txt %/out/streq.txt %/out/size.txt %/out/probe.txt
+	-cat $(@D)/lms.txt > $@
+	-cat $(@D)/out/make.txt >> $@
+	-cat $(@D)/out/strio.txt >> $@
+	-cat $(@D)/out/streq.txt >> $@
+	-cat $(@D)/out/size.txt >> $@
+	-cat $(@D)/out/probe.txt >> $@
 
 # Rules to clean up
 .PHONY: clean
