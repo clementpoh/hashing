@@ -34,19 +34,19 @@ to the theory questions in a separate file entitled “report.pdf”
 Please download the skeleton code from the LMS. <span>**Do not alter
 filenames or structure**</span>. The files are as follows.
 
-  ---------------------------- --------------------------------------------------------
-  `Makefile`                   Download from LMS and edit to include your student ID.
-  `main.c`                     Download from LMS and do not change.
-  `hashtable.c, hashtable.h`   ”
-  `list.c, list.h`             ”
-  `array.c, array.h`           ”
-  `types.h`                    ”
-  `hash.h`                     ”
-  `extra.h`                    ”
-  `types.c`                    Replace with your own implementation.
-  `hash.c`                     ”
-  `extra.c`                    ”
-  ---------------------------- --------------------------------------------------------
+  File             | Instructions
+------------------ | ------------------------------------------------------
+`Makefile`         | Download from LMS and edit to include your student id.
+`main.c`           | Download from LMS and do not change.
+`hashtable.c`      | ”
+`hashtable.h`      | ”
+`list.h, list.c`   | ”
+`array.c, array.h` | ”
+`types.h` `hash.h` | ”
+`extra.h`          | ”
+`types.c`          | Replace with your own implementation.
+`hash.c`           | Replace with your own implementation.
+`extra.c`          | Replace with your own implementation.
 
 Theory of hash functions and hash tables 
 ----------------------------------------
