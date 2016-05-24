@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
         switch (c) {
             case 'n':
                 size = atoi(optarg);
-                exp = next_prime(2 * size + 1);
+                exp = next_prime(size);
                 act = determine_size(size);
                 if (exp != act) {
                     fprintf(stderr, "Expected: %d, Actual: %d", exp, act);
@@ -39,7 +39,8 @@ int main(int argc, char *argv[]) {
 
 /* Return the next prime greater than or equal to n */
 static unsigned int next_prime(unsigned int n) {
-    n = n % 2 ? n : n + 1;
+    if (n < 2) return 2;
+    n = 2 * n + 1;
 
     while (!is_prime(n))
         n = n + 2;
