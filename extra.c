@@ -145,7 +145,7 @@ void collide_clever(unsigned int size, unsigned int seed, int n) {
         // Find a value of string[c] so that string hashes to zero
         string[c] = hash_zero(coeffs, string, size, c);
 
-        printf("%d: %s\n", universal_hash(string, size), string);
+        printf("%s\n", string);
     }
 }
 
