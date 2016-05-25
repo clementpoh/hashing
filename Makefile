@@ -23,6 +23,8 @@ STRIO   = $(SCRIPTS)/strio.sh
 STREQ	= $(SCRIPTS)/streq.sh
 SIZE	= $(SCRIPTS)/size.sh
 PROBE	= $(SCRIPTS)/probe.sh
+BAD		= $(SCRIPTS)/bad.sh
+UNIV	= $(SCRIPTS)/univ.sh
 
 # Header and source files submissions depend on
 HDR		= $(wildcard $(SCAFDIR)/*.h)
@@ -40,10 +42,17 @@ STUDSTRIO 	= $(addsuffix /out/strio.txt,$(SUBS))
 STUDSTREQ 	= $(addsuffix /out/streq.txt,$(SUBS))
 STUDSIZE 	= $(addsuffix /out/size.txt,$(SUBS))
 STUDPROBE	= $(addsuffix /out/probe.txt,$(SUBS))
+STUDBAD		= $(addsuffix /out/bad.txt,$(SUBS))
+STUDUNIV	= $(addsuffix /out/univ.txt,$(SUBS))
 
 # Expected outputs
 STRPRINT	= $(patsubst %.in,%.out,$(wildcard $(TESTDIR)/*.in))
 STRFIND		= $(patsubst %.in,%.eq,$(wildcard $(TESTDIR)/*.in))
+HASHBAD		= $(patsubst %.in,%.bad,$(wildcard $(TESTDIR)/*.in))
+HASHUNIV	= $(patsubst %.in,%.univ,$(wildcard $(TESTDIR)/*.in))
+
+SEED	= -s 11
+FLAGS   = $(SEED)
 
 # Rules
 
@@ -87,22 +96,40 @@ probe: probe.log
 probe.log: $(PROBE) compile.log
 	$(FOREACH) $(PROBE) $(SUBDIR) 2>&1 | tee $@
 
+bad: bad.log
+bad.log: $(BAD) $(HASHBAD) compile.log
+	$(FOREACH) $(BAD) $(SUBDIR) 2>&1 | tee $@
+
+univ: univ.log
+univ.log: $(UNIV) $(HASHUNIV) compile.log
+	$(FOREACH) $(UNIV) $(SUBDIR) 2>&1 | tee $@
+
 # Rules to generate test cases
 .PHONY: $(TESTDIR)
 $(TESTDIR): $(TESTDIR)/empty $(TESTDIR)/ints.in $(TESTDIR)/str.in
 	touch $(TESTDIR)/empty
 	seq 1 50 > $(TESTDIR)/ints.in
 
-# STRFIND expands to the next rule
-$(TESTDIR)/%.eq: $(TESTDIR)/%.in $(SOLN)
-	$(SOLN) -t s -f $(basename $<).keys $< > $@
-
 # STRPRINT expands to the next rule
-$(TESTDIR)/%.out: $(TESTDIR)/%.in $(SOLN)
+$(TESTDIR)/%.out: $(TESTDIR)/%.in $(SOLN) Makefile
 	$(SOLN) -t s -p $< > $@
 
+# STRFIND expands to the next rule
+$(TESTDIR)/%.eq: $(TESTDIR)/%.in $(SOLN) Makefile
+	$(SOLN) -t s -f $(basename $<).keys $< > $@
+
+# HASHBAD expands to the next rule
+$(TESTDIR)/%.bad: $(TESTDIR)/%.in $(SOLN) Makefile
+	$(SOLN) -t s -f $(basename $<).keys -p -s 11 -h b $< > $@
+
+# HASHBAD expands to the next rule
+$(TESTDIR)/%.univ: $(TESTDIR)/%.in $(SOLN) Makefile
+	$(SOLN) -t s -f $(basename $<).keys -s 11 -h u $< > $@
+
 # Rules for an individual submission
-.PHONY: $(SUBS)
+.PHONY: $(SUBDIR) $(SUBS)
+$(SUBDIR): $(SUBS)
+
 $(SUBS): % : %/summary.txt
 
 # Rule to compile the student binary
@@ -122,14 +149,23 @@ $(STUDSIZE): %/out/size.txt : %/ass2 $(PRINT)
 $(STUDPROBE): %/out/probe.txt : %/ass2 $(PROBE)
 	-$(PROBE) $(subst /out,,$(@D))
 
+$(STUDBAD): %/out/bad.txt : %/ass2 $(BAD) $(HASHBAD)
+	-$(BAD) $(subst /out,,$(@D))
+
+$(STUDUNIV): %/out/univ.txt : %/ass2 $(UNIV) $(HASHUNIV)
+	-$(UNIV) $(subst /out,,$(@D))
+
 $(STUDSUMMARY): %/summary.txt : %/ass2 \
-   	%/out/strio.txt %/out/streq.txt %/out/size.txt %/out/probe.txt
+   	%/out/strio.txt %/out/streq.txt %/out/size.txt %/out/probe.txt \
+	%/out/bad.txt %/out/univ.txt
 	-cat $(@D)/lms.txt > $@
 	-cat $(@D)/out/make.txt >> $@
 	-cat $(@D)/out/strio.txt >> $@
 	-cat $(@D)/out/streq.txt >> $@
 	-cat $(@D)/out/size.txt >> $@
 	-cat $(@D)/out/probe.txt >> $@
+	-cat $(@D)/out/bad.txt >> $@
+	-cat $(@D)/out/univ.txt >> $@
 
 # Rules to clean up
 .PHONY: clean
@@ -148,10 +184,11 @@ clean:
 		$(SUBDIR)/**/scaffold.c \
 		$(SUBDIR)/**/Makefile
 
-nearlyclean: clean
-	-rm -rf test/*.eq test/*.out
+.PHONY: cleantests
+cleantests:
+	-rm -rf test/*.eq test/*.out test/*.bad test/*.univ
 
 .PHONY: clobber
-clobber: nearlyclean
+clobber: clean cleantests
 	-rm -rf *.log \
 	   	$(SUBDIR)/**/out

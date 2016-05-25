@@ -2,9 +2,12 @@
 #include <stdio.h>
 #include <getopt.h>
 #include <stdbool.h>
+#include <string.h>
+#include <assert.h>
 
 #include "extra.h"
 #include "hash.h"
+#include "hashtable.h"
 
 /* Tests the linear_probe hash function */
 static bool test_probing(void);
@@ -17,6 +20,11 @@ static unsigned int next_prime(unsigned int n);
 
 /* Determine whether n is prime. */
 static bool is_prime(int n);
+
+/* Official implementations of string functions */
+bool off_eq(char *str1, char *str2);
+char *off_copy(char *str);
+void off_print(FILE *file, char *str);
 
 /* Print usage message and exit */
 static void usage_exit(char *bin) {
@@ -37,6 +45,26 @@ int main(int argc, char *argv[]) {
             default: usage_exit(argv[0]);
         }
     }
+}
+
+/* Returns whether str1 is equal to str2 */
+bool off_eq(char *str1, char *str2) {
+    return !strcmp(str1, str2);
+}
+
+/* Returns a copy of src */
+char *off_copy(char *src) {
+    /* Remove the newline as required */
+    src[strcspn(src, "\n")] = '\0';
+    /* Malloc enough space for the null byte */
+    char *dest = malloc(sizeof(*dest) * strlen(src) + 1);
+    assert(dest);
+    return strcpy(dest, src);
+}
+
+/* Prints str to file */
+void off_print(FILE *file, char *str) {
+    fprintf(file, " %s", str);
 }
 
 static bool test_probing(void) {

@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <getopt.h>
 #include <assert.h>
+#include <string.h>
 
 #include "extra.h"
 #include "types.h"
@@ -30,7 +31,7 @@ typedef struct {
     Chain method;
     int seed;
     bool MTF;
-    bool string;
+    char type;
     bool print;
     void (*coll)(unsigned int, unsigned int, int);
     int generate;
@@ -47,6 +48,14 @@ static HT create_table(Options opts, int size);
 /* Returns a pointer to file */
 static FILE *safe_open(char *filename, const char *mode);
 
+/* Returns a type struct depending on type */
+Type get_type(char type);
+
+/* Official implementations of string functions */
+bool off_eq(char *str1, char *str2);
+char *off_copy(char *str);
+void off_print(FILE *file, char *str);
+
 /* Print usage message and exit */
 static void usage_exit(char *bin) {
     fprintf(stderr, "%s [options] <insert.in>\n", bin);
@@ -56,6 +65,7 @@ static void usage_exit(char *bin) {
     fprintf(stderr, "  -m       Move-to-front for separate chaining\n");
     fprintf(stderr, "  -s seed  Random seed [default: 0]\n");
     fprintf(stderr, "  -t s     Expect strings as input\n");
+    fprintf(stderr, "  -t o     Use official string I/O implementations\n");
     fprintf(stderr, "  -p       Print the hash table to stdout\n");
     fprintf(stderr, "  -n size  Expected input size [default: 11]\n");
     fprintf(stderr, "  -g num   Number of collision strings to generate\n");
@@ -88,7 +98,7 @@ static Options load_options(int argc, char *argv[]) {
         .find   = NULL,
         .method = LIST,
         .MTF    = false,
-        .string = false,
+        .type   = 0,
         .seed   = 0,
         .hash   = worst_hash,
         .print  = false,
@@ -124,7 +134,7 @@ static Options load_options(int argc, char *argv[]) {
             case 'n': opts.size = atoi(optarg);     break;
             case 'p': opts.print = true;            break;
             case 's': opts.seed = atoi(optarg);     break;
-            case 't': opts.string = optarg[0] == 's'; break;
+            case 't': opts.type = optarg[0];        break;
             case '?':
             default: usage_exit(opts.bin);
         }
@@ -138,11 +148,6 @@ static Options load_options(int argc, char *argv[]) {
     if (opts.coll && opts.hash != (Hash) universal_hash) {
         fprintf(stderr, "-c: changing hash to universal hash\n");
         opts.hash = (Hash) universal_hash;
-    }
-
-    if (opts.hash == (Hash) bad_hash && !opts.string) {
-        fprintf(stderr, "-h b: expecting strings\n");
-        opts.string = true;
     }
 
     opts.insert = argv[optind];
@@ -178,11 +183,50 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+/* Returns whether str1 is equal to str2 */
+bool off_eq(char *str1, char *str2) {
+    return !strcmp(str1, str2);
+}
+
+/* Returns a copy of src */
+char *off_copy(char *src) {
+    /* Remove the newline as required */
+    src[strcspn(src, "\n")] = '\0';
+    /* Malloc enough space for the null byte */
+    char *dest = malloc(sizeof(*dest) * strlen(src) + 1);
+    assert(dest);
+    return strcpy(dest, src);
+}
+
+/* Prints str to file */
+void off_print(FILE *file, char *str) {
+    fprintf(file, " %s", str);
+}
+
+/* Returns a type struct depending on type */
+Type get_type(char type) {
+    switch (type) {
+        case 'o': return (Type) {
+            .eq = (Eq) off_eq,
+            .parse = (Parse) off_copy,
+            .print = (Print) off_print
+        };
+        case 's': return (Type) {
+            .eq = (Eq) str_eq,
+            .parse = (Parse) str_copy,
+            .print = (Print) str_print
+        };
+        default: return (Type) {
+            .eq = (Eq) int_eq,
+            .parse = (Parse) atoi,
+            .print = (Print) int_print 
+        };
+    }
+}
+
 /* Create the hash table from the program options */
 static HT create_table(Options opts, int size) {
-    Type t = { .eq    = opts.string ? (Eq)    str_eq    : (Eq) int_eq
-             , .parse = opts.string ? (Parse) str_copy  : (Parse) atoi
-             , .print = opts.string ? (Print) str_print : (Print) int_print };
+    Type t = get_type(opts.type);
 
     HT ht = NULL;
     switch (opts.method) {
