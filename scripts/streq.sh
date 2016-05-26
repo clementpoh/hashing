@@ -63,11 +63,15 @@ exit_codes()  {
     fi
 }
 
+LEN="${#@}"
+DIR="${@:$LEN}"
+FLAGS="${@:1:$(($LEN - 1))}"
+
 # Run the submission
-if [ -d "$1" ]; then
-    USER=$(basename "$1")
-    BIN="$1/ass2"
-    OUT="$1/out"
+if [ -d "$DIR" ]; then
+    USER=$(basename "$DIR")
+    BIN="$DIR/ass2"
+    OUT="$DIR/out"
     LOGFILE="$OUT/streq.txt"
 
     printf "************************************************\n" > $LOGFILE
@@ -90,17 +94,15 @@ if [ -d "$1" ]; then
         VERIFY="$TESTS/$BASE.eq"
 
         KEYS="$TESTS/$BASE.keys"
-        for KEY in $KEYS; do
 
-            OPTS="-t s -f $KEY"
+        OPTS="$FLAGS -t s -f $KEYS"
 
-            # Braces are for errors that originate from the shell
-            { "$TIMEOUT" "$BIN" $OPTS $INPUT > $OUTPUT 2> $ERRORS; } &> $SHELL
+        # Braces are for errors that originate from the shell
+        { $TIMEOUT $BIN $OPTS $INPUT > $OUTPUT 2> $ERRORS; } &> $SHELL
 
-            exit_codes $? $BIN $OPTS $INPUT
+        exit_codes $? $BIN $OPTS $INPUT
 
-            COUNT=$((COUNT + 1))
-        done
+        COUNT=$((COUNT + 1))
     done
     printf "\n$PASS/$COUNT successful\n" >> $LOGFILE
 fi

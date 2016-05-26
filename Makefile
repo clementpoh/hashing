@@ -48,21 +48,19 @@ STUDUNIV	= $(addsuffix /out/univ.txt,$(SUBS))
 # Expected outputs
 STRPRINT	= $(patsubst %.in,%.out,$(wildcard $(TESTDIR)/*.in))
 STRFIND		= $(patsubst %.in,%.eq,$(wildcard $(TESTDIR)/*.in))
-HASHBAD		= $(patsubst %.in,%.bad,$(wildcard $(TESTDIR)/*.in))
 HASHUNIV	= $(patsubst %.in,%.univ,$(wildcard $(TESTDIR)/*.in))
 
 SEED	= -s 11
-FLAGS   = $(SEED)
 
 # Rules
+
+.PHONY: all compile strio streq size probe
+all: $(SOLNDIR) $(TESTDIR)
 
 spec.pdf: spec.tex
 	pdflatex spec.tex && rm spec.log spec.aux
 
 # Rules to run tests on all submissions
-
-.PHONY: all compile strio streq size probe
-all: $(SOLNDIR) $(STRPRINT) $(TESTDIR)
 
 .PHONY: $(SOLNDIR)
 $(SOLNDIR): $(SOLN)
@@ -97,12 +95,12 @@ probe.log: $(PROBE) compile.log
 	$(FOREACH) $(PROBE) $(SUBDIR) 2>&1 | tee $@
 
 bad: bad.log
-bad.log: $(BAD) $(HASHBAD) compile.log
+bad.log: $(BAD) compile.log
 	$(FOREACH) $(BAD) $(SUBDIR) 2>&1 | tee $@
 
 univ: univ.log
 univ.log: $(UNIV) $(HASHUNIV) compile.log
-	$(FOREACH) $(UNIV) $(SUBDIR) 2>&1 | tee $@
+	$(FOREACH) $(UNIV) $(SEED) $(SUBDIR) 2>&1 | tee $@
 
 # Rules to generate test cases
 .PHONY: $(TESTDIR)
@@ -118,13 +116,9 @@ $(TESTDIR)/%.out: $(TESTDIR)/%.in $(SOLN) Makefile
 $(TESTDIR)/%.eq: $(TESTDIR)/%.in $(SOLN) Makefile
 	$(SOLN) -t s -f $(basename $<).keys $< > $@
 
-# HASHBAD expands to the next rule
-$(TESTDIR)/%.bad: $(TESTDIR)/%.in $(SOLN) Makefile
-	$(SOLN) -t s -f $(basename $<).keys -p -s 11 -h b $< > $@
-
-# HASHBAD expands to the next rule
+# HASHUNIV expands to the next rule
 $(TESTDIR)/%.univ: $(TESTDIR)/%.in $(SOLN) Makefile
-	$(SOLN) -t s -f $(basename $<).keys -s 11 -h u $< > $@
+	$(SOLN) $(SEED) -t s -f $(basename $<).keys -h u $< > $@
 
 # Rules for an individual submission
 .PHONY: $(SUBDIR) $(SUBS)
@@ -149,11 +143,11 @@ $(STUDSIZE): %/out/size.txt : %/ass2 $(PRINT)
 $(STUDPROBE): %/out/probe.txt : %/ass2 $(PROBE)
 	-$(PROBE) $(subst /out,,$(@D))
 
-$(STUDBAD): %/out/bad.txt : %/ass2 $(BAD) $(HASHBAD)
+$(STUDBAD): %/out/bad.txt : %/ass2 $(BAD)
 	-$(BAD) $(subst /out,,$(@D))
 
 $(STUDUNIV): %/out/univ.txt : %/ass2 $(UNIV) $(HASHUNIV)
-	-$(UNIV) $(subst /out,,$(@D))
+	-$(UNIV) $(SEED) $(subst /out,,$(@D))
 
 $(STUDSUMMARY): %/summary.txt : %/ass2 \
    	%/out/strio.txt %/out/streq.txt %/out/size.txt %/out/probe.txt \

@@ -20,14 +20,11 @@ exit_codes()  {
     local EXIT=$1
 
     case "$EXIT" in
-        0)  if diff -w "$OUTPUT" "$VERIFY" &> /dev/null; then
-                MSG="PASS: $BIN $OPTS $INPUT\n"
-                PASS=$((PASS + 1))
-            else
-                MSG="FAIL: $BIN $OPTS $INPUT | diff -w $OUTPUT $VERIFY\n"
-            fi ;;
-        1)  # Indicates that program exited with EXIT_FAILURE
-            MSG="$EXIT EXIT_FAILURE $BIN $OPTS $INPUT\n";;
+        0)  # Program passed test case
+            MSG="PASS: $BIN $OPTS $INPUT\n"
+            PASS=$((PASS + 1)) ;;
+        1)  # Program failed test case
+            MSG="FAIL: $BIN $OPTS $INPUT | $(cat $ERRORS)\n" ;;
         3)  #  failed assertion in MinGW
             MSG="$EXIT $BIN aborted\n";;
         5)  # Seems to indicate segmentation fault in MinGW
@@ -63,16 +60,20 @@ exit_codes()  {
     fi
 }
 
+LEN="${#@}"
+DIR="${@:$LEN}"
+FLAGS="${@:1:$(($LEN - 1))}"
+
 # Run the submission
-if [ -d "$1" ]; then
-    USER=$(basename "$1")
-    BIN="$1/ass2"
-    OUT="$1/out"
+if [ -d "$DIR" ]; then
+    USER=$(basename "$DIR")
+    BIN="$DIR/scaffold"
+    OUT="$DIR/out"
     LOGFILE="$OUT/bad.txt"
 
-    printf "************************************************\n" > $LOGFILE
-    printf "* Testing the function bad_hash()\n" >> $LOGFILE
-    printf "************************************************\n" >> $LOGFILE
+    printf "******************************************\n" > $LOGFILE
+    printf "* Testing bad_hash()\n" >> $LOGFILE
+    printf "******************************************\n" >> $LOGFILE
 
     # Check whether the executable exists
     if [ ! -x $BIN ]; then
@@ -81,27 +82,15 @@ if [ -d "$1" ]; then
         exit 127
     fi
 
-    INPUTS="$TESTS/*.in"
-    for INPUT in $INPUTS; do
-        BASE=$(basename $INPUT ".in")
-        # Location of the output dot file
-        OUTPUT="$OUT/$BASE.bad"
-        # Location of the verification file
-        VERIFY="$TESTS/$BASE.bad"
+    OPTS="$FLAGS -b"
 
-        KEYS="$TESTS/$BASE.keys"
-        for KEY in $KEYS; do
+    # Braces are for errors that originate from the shell
+    { $TIMEOUT $BIN $OPTS 2> $ERRORS; } &> $SHELL
 
-            OPTS="-t o -f $KEY -h b -p"
+    exit_codes $? $BIN $OPTS
 
-            # Braces are for errors that originate from the shell
-            { "$TIMEOUT" "$BIN" $OPTS $INPUT > $OUTPUT 2> $ERRORS; } &> $SHELL
+    COUNT=$((COUNT + 1))
 
-            exit_codes $? $BIN $OPTS $INPUT
-
-            COUNT=$((COUNT + 1))
-        done
-    done
     printf "\n$PASS/$COUNT successful\n" >> $LOGFILE
 fi
 

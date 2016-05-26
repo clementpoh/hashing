@@ -60,11 +60,15 @@ exit_codes()  {
     fi
 }
 
+LEN="${#@}"
+DIR="${@:$LEN}"
+FLAGS="${@:1:$(($LEN - 1))}"
+
 # Run the submission
-if [ -d "$1" ]; then
-    USER=$(basename "$1")
-    BIN="$1/scaffold"
-    OUT="$1/out"
+if [ -d "$DIR" ]; then
+    USER=$(basename "$DIR")
+    BIN="$DIR/scaffold"
+    OUT="$DIR/out"
     LOGFILE="$OUT/probe.txt"
 
     printf "******************************************\n" > $LOGFILE
@@ -78,10 +82,10 @@ if [ -d "$1" ]; then
         exit 127
     fi
 
-    OPTS="-l"
+    OPTS="$FLAGS -p"
 
     # Braces are for errors that originate from the shell
-    { "$TIMEOUT" "$BIN" $OPTS 2> $ERRORS; } &> $SHELL
+    { $TIMEOUT $BIN $OPTS 2> $ERRORS; } &> $SHELL
 
     exit_codes $? $BIN $OPTS
 

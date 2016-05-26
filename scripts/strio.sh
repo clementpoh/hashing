@@ -63,11 +63,15 @@ exit_codes()  {
     fi
 }
 
+LEN="${#@}"
+DIR="${@:$LEN}"
+FLAGS="${@:1:$(($LEN - 1))}"
+
 # Run the submission
-if [ -d "$1" ]; then
-    USER=$(basename "$1")
-    BIN="$1/ass2"
-    OUT="$1/out"
+if [ -d "$DIR" ]; then
+    USER=$(basename "$DIR")
+    BIN="$DIR/ass2"
+    OUT="$DIR/out"
     LOGFILE="$OUT/strio.txt"
 
     printf "***************************************************\n" > $LOGFILE
@@ -89,10 +93,10 @@ if [ -d "$1" ]; then
         # Location of the verification file
         VERIFY="$TESTS/$BASE.out"
 
-        OPTS="-p -t s"
+        OPTS="$FLAGS -p -t s"
 
         # Braces are for errors that originate from the shell
-        { "$TIMEOUT" "$BIN" $OPTS $INPUT > $OUTPUT 2> $ERRORS; } &> $SHELL
+        { $TIMEOUT $BIN $OPTS $INPUT > $OUTPUT 2> $ERRORS; } &> $SHELL
 
         exit_codes $? $BIN $OPTS $INPUT
 
