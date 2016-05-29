@@ -88,7 +88,7 @@ void load_universal(int *coeffs) {
 }
 
 static bool test_collide(int size, int seed, int n) {
-    int coeffs[MAXSTRLEN], successful = 0;
+    int coeffs[MAXSTRLEN], replica = 0, student = 0, official = 0;
     unsigned char string[MAXSTRLEN];
 
     // Reseed random generator and initialise universal_hash
@@ -103,26 +103,30 @@ static bool test_collide(int size, int seed, int n) {
     while (fgets((char *)string, MAXSTRLEN, stdin)) {
         string[strcspn((char *)string, "\n")] = '\0';
 
-        if (replicate_hash(coeffs, string, size)) {
-            fprintf(stderr, "hash: %d: student: %d official: %d len: %d, %s\n"
-                   , strlen((char *)string)
-                   , replicate_hash(coeffs, string, size)
-                   , universal_hash(string, size)
-                   , off_hash(string, size)
-                   , string
-            );
-        } else successful++;
+        int repl = replicate_hash(coeffs, string, size);
+        int univ = universal_hash(string, size);
+        int off = off_hash(string, size);
+
+        replica += !repl;
+        student += !univ;
+        official += !off;
+
+        if (repl)
+            fprintf(stderr, "hash: %3d: student: %3d official: %3d len: %3d, %s\n"
+                , repl , univ , off , strlen((char *)string) , string);
+
     }
 
-    fprintf(stderr, "Hashed to zero: %d\n", successful);
-    return !(successful >= n);
+    fprintf(stderr, "Hashed to zero - replica: %d student: %d, official: %d\n",
+            replica, student, official);
+    return !(replica >= n);
 }
 
 static bool test_size(int size) {
     int expect = official_size(size);
     int actual = determine_size(size);
     if (expect != actual) {
-        fprintf(stderr, "Expected: %d, Actual: %d", expect, actual);
+        fprintf(stderr, "Expected: %3d, Actual: %3d", expect, actual);
         return EXIT_FAILURE;
     }
     return EXIT_SUCCESS;
@@ -133,7 +137,7 @@ static bool test_probing(void) {
     for (long i = 0; i < 100; i++) {
         int hash = linear_probe((void *)i, i);
         if (hash != expect) {
-            fprintf(stderr, "Expected: %d, Actual: %d", expect, hash);
+            fprintf(stderr, "Expected: %3d, Actual: %3d", expect, hash);
             return EXIT_FAILURE;
         }
     }
