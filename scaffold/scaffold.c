@@ -79,27 +79,36 @@ unsigned int replicate_hash(int *coeffs, unsigned char *string, int size) {
     return hash % size;
 }
 
-void load_universal(int *coeffs) {
-    int n;
+int load_universal(int *coeffs, int size) {
+    int n, coeff;
     scanf("%d\n", &n);
 
-    for (int i = 0; i < n; i++)
-        scanf("%d\n", coeffs + i);
+    for (int i = 0; i < n && i < MAXSTRLEN; i++) {
+        scanf("%d\n", &coeff);
+        if (coeff > size)
+            fprintf(stderr, "Coefficient: %d > size: %d\n", coeff, size);
+
+        coeffs[i] = coeff % size;
+    }
+    return n;
 }
 
 static bool test_collide(int size, int seed, int n) {
-    int coeffs[MAXSTRLEN], replica = 0, student = 0, official = 0;
+    int coeffs[MAXSTRLEN];
+    int total = 0, replica = 0, student = 0, official = 0;
     unsigned char string[MAXSTRLEN];
+    // Some submissions segmentation fault on const char* inputs.
+    unsigned char init[MAXSTRLEN] = "init";
+
+    // Reseed random generator and initialise official universal hash
+    srand(seed);
+    off_hash(init, size);
 
     // Reseed random generator and initialise universal_hash
     srand(seed);
-    universal_hash((unsigned char *)"init", size);
+    universal_hash(init, size);
 
-    // Reseed random generator and initialise universal_hash
-    srand(seed);
-    off_hash((unsigned char *)"init", size);
-
-    load_universal(coeffs);
+    int cs = load_universal(coeffs, size);
     while (fgets((char *)string, MAXSTRLEN, stdin)) {
         string[strcspn((char *)string, "\n")] = '\0';
 
@@ -107,17 +116,17 @@ static bool test_collide(int size, int seed, int n) {
         int univ = universal_hash(string, size);
         int off = off_hash(string, size);
 
+        total++;
         replica += !repl;
         student += !univ;
         official += !off;
 
-        if (repl)
-            fprintf(stderr, "hash: %3d: student: %3d official: %3d len: %3d, %s\n"
-                , repl , univ , off , strlen((char *)string) , string);
-
+        fprintf(stderr, "hash: %3d: student: %3d official: %3d len: %3d, %.10s\n"
+            , repl, univ, off, strlen((char *)string) , string);
     }
 
-    fprintf(stderr, "Hashed to zero - replica: %d student: %d, official: %d\n",
+    fprintf(stderr, "total strings: %d, coefficients: %d\n", total, cs);
+    fprintf(stderr, "hashed to zero - replica: %d student: %d, official: %d\n",
             replica, student, official);
     return !(replica >= n);
 }
