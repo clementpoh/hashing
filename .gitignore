@@ -10,10 +10,8 @@ spec.pdf
 workshop/
 
 test/*.in
-test/*.dot
-test/*.rev
-test/*.dfs
-test/*.kahn
-test/*.rand
+test/*.uni
+test/*.eq
+test/*.out
 
 subs

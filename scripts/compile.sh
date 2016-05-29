@@ -11,8 +11,8 @@ SKELETON=${2:-"./scaffold"}
 SOLN=${3:-"./soln"}
 EXIT=0
 
-HDR="array.h extra.h hash.h hashtable.h list.h types.h"
-SRC="array.c hashtable.c list.c main.c scaffold.c"
+HDR="array.h extra.h hash.h hashtable.h list.h types.h official.h"
+SRC="array.c hashtable.c list.c main.c scaffold.c official.c"
 
 # Compile the submission
 if [ -d "$1" ]; then

@@ -18,11 +18,14 @@ exit_codes()  {
     local EXIT=$1
 
     case "$EXIT" in
-        0)  # Program passed test case
-            MSG="PASS $BIN $OPTS $INPUT\n"
-            PASS=$((PASS + 1)) ;;
-        1)  # Program failed test case
-            MSG="FAIL $BIN $OPTS $INPUT | $(cat $ERRORS)\n" ;;
+        0)  if $SCAFFOLD < $OUTPUT 2>> $ERRORS; then
+                MSG="PASS $BIN $OPTS $INPUT\n"
+                PASS=$((PASS + 1))
+            else
+                MSG="FAIL $BIN $OPTS $INPUT | $SCAFFOLD\n"
+            fi ;;
+        1)  # Indicates that program exited with EXIT_FAILURE
+            MSG="EXIT $BIN $OPTS $INPUT\n";;
         3)  #  failed assertion in MinGW
             MSG="$EXIT $BIN aborted\n";;
         5)  # Seems to indicate segmentation fault in MinGW
@@ -65,13 +68,13 @@ FLAGS="${@:1:$(($LEN - 1))}"
 # Run the submission
 if [ -d "$DIR" ]; then
     USER=$(basename "$DIR")
-    BIN="$DIR/scaffold"
+    BIN="$DIR/ass2"
     OUT="$DIR/out"
-    LOGFILE="$OUT/probe.txt"
+    LOGFILE="$OUT/dumb.txt"
 
-    printf "******************************************\n" > $LOGFILE
-    printf "* Testing linear_probe()\n" >> $LOGFILE
-    printf "******************************************\n" >> $LOGFILE
+    printf "************************************************\n" > $LOGFILE
+    printf "* Testing collide_dumb()\n" >> $LOGFILE
+    printf "************************************************\n" >> $LOGFILE
 
     # Check whether the executable exists
     if [ ! -x $BIN ]; then
@@ -80,17 +83,25 @@ if [ -d "$DIR" ]; then
         exit 127
     fi
 
-    OPTS="$FLAGS -p"
+    for SEED in 45 95; do
+        for SIZE in 30 60 120; do
+            INPUT="$TESTS/int.in"
+            OUTPUT="$OUT/dumb.n$SIZE.s$SEED.col"
 
-    # Braces are for errors that originate from the shell
-    { $TIMEOUT $BIN $OPTS 2> $ERRORS; } &> $SHELL
+            # Location of the scaffolding binary
+            SCAFFOLD="$DIR/scaffold -c $SIZE $SEED 5"
 
-    exit_codes $? $BIN $OPTS
+            OPTS="$FLAGS -n $SIZE -s $SEED -c d -h u -t o"
 
-    COUNT=$((COUNT + 1))
+            # Braces are for errors that originate from the shell
+            { $TIMEOUT $BIN $OPTS $INPUT > $OUTPUT 2> $ERRORS; } &> $SHELL
 
+            exit_codes $? $BIN $OPTS $INPUT
+
+            COUNT=$((COUNT + 1))
+        done
+    done
     printf "\n$PASS/$COUNT successful\n" >> $LOGFILE
 fi
 
-# The $((expr)) works like in C, so negate it to get the correct exit status
 exit $((! ($PASS == $COUNT)))

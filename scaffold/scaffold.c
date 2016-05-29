@@ -9,8 +9,9 @@
 #include "hash.h"
 #include "hashtable.h"
 
+#include "official.h"
+
 #define SEED 1337
-#define MAXSTRLEN 256
 
 /* Tests the bad_hash function */
 static bool test_bad(int seed, int n);
@@ -21,29 +22,26 @@ static bool test_probing(void);
 /* Tests the determine_size function */
 static bool test_size(int size);
 
-/* Tests the collide_dumb function */
-static bool test_collide(int size, int n);
-
-/* Return the next prime greater than or equal to n */
-static unsigned int next_prime(unsigned int n);
-
-/* Determine whether n is prime. */
-static bool is_prime(int n);
+/* Tests the collide_function */
+static bool test_collide(int size, int seed, int n);
 
 /* Print usage message and exit */
 static void usage_exit(char *bin) {
-    fprintf(stderr, "%s (-b | -n size | -p | -c n)\n", bin);
+    fprintf(stderr, "%s (-b | -c size seed n | -n size | -p )\n", bin);
     exit(EXIT_FAILURE);
 }
 
 int main(int argc, char *argv[]) {
-    int c;
-    while ((c = getopt(argc, argv, "bdps:")) != -1) {
+    int c, seed, size;
+    while ((c = getopt(argc, argv, "bc:dps:")) != -1) {
         switch (c) {
             case 'b': // Test bad hash
                 return test_bad(SEED, MAXSTRLEN);
-            case 'c':
-                return test_collide(atoi(optarg), 2);
+            case 'c': // Test collissions
+                size = official_size(atoi(optarg));
+                seed = atoi(argv[optind]);
+                // n = atoi(argv[optind + 1]);
+                return test_collide(size, seed, 2);
             case 'p': // Test linear probing
                 return test_probing();
             case 's': // Test determine_size
@@ -55,7 +53,7 @@ int main(int argc, char *argv[]) {
 
 static bool test_bad(int seed, int n) {
     srand(seed);
-    unsigned int size = next_prime(n);
+    unsigned int size = official_size(n);
 
     for (long i = 0; i < 100; i++) {
         int len = rand() % (MAXSTRLEN - 1) + 1;
@@ -70,7 +68,7 @@ static bool test_bad(int seed, int n) {
             return EXIT_FAILURE;
         }
     }
-    return EXIT_SUCCESS; 
+    return EXIT_SUCCESS;
 }
 
 unsigned int replicate_hash(int *coeffs, unsigned char *string, int size) {
@@ -84,29 +82,44 @@ unsigned int replicate_hash(int *coeffs, unsigned char *string, int size) {
 void load_universal(int *coeffs) {
     int n;
     scanf("%d\n", &n);
-    
+
     for (int i = 0; i < n; i++)
         scanf("%d\n", coeffs + i);
 }
 
-static bool test_collide(int size, int n) {
-    int coeffs[MAXSTRLEN];
+static bool test_collide(int size, int seed, int n) {
+    int coeffs[MAXSTRLEN], successful = 0;
     unsigned char string[MAXSTRLEN];
-    load_universal(coeffs);
 
-    bool success = true;
-    for (int i = 0; i < n; i++) {
-        fgets((char *)string, MAXSTRLEN, stdin);
+    // Reseed random generator and initialise universal_hash
+    srand(seed);
+    universal_hash((unsigned char *)"init", size);
+
+    // Reseed random generator and initialise universal_hash
+    srand(seed);
+    off_hash((unsigned char *)"init", size);
+
+    load_universal(coeffs);
+    while (fgets((char *)string, MAXSTRLEN, stdin)) {
         string[strcspn((char *)string, "\n")] = '\0';
 
-        success = success && !replicate_hash(coeffs, string, size); 
+        if (replicate_hash(coeffs, string, size)) {
+            fprintf(stderr, "hash: %d: student: %d official: %d len: %d, %s\n"
+                   , strlen((char *)string)
+                   , replicate_hash(coeffs, string, size)
+                   , universal_hash(string, size)
+                   , off_hash(string, size)
+                   , string
+            );
+        } else successful++;
     }
 
-    return !success;
+    fprintf(stderr, "Hashed to zero: %d\n", successful);
+    return !(successful >= n);
 }
 
 static bool test_size(int size) {
-    int expect = next_prime(size);
+    int expect = official_size(size);
     int actual = determine_size(size);
     if (expect != actual) {
         fprintf(stderr, "Expected: %d, Actual: %d", expect, actual);
@@ -127,25 +140,3 @@ static bool test_probing(void) {
     return EXIT_SUCCESS;
 }
 
-/* Return the next prime greater than or equal to n */
-static unsigned int next_prime(unsigned int n) {
-    if (n < 2) return 2;
-    n = 2 * n + 1;
-
-    while (!is_prime(n))
-        n = n + 2;
-
-    return n;
-}
-
-/* Determine whether n is prime. */
-static bool is_prime(int n) {
-    if (n < 2)
-        return false;
-
-    for (int div = 2; div * div <= n; div++) {
-        if (n % div == 0)
-            return false;
-    }
-    return true;
-}

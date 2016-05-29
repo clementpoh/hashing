@@ -18,6 +18,8 @@
 #include "types.h"
 #include "hashtable.h"
 
+#include "official.h"
+
 #define DEFAULT_SIZE 11
 #define NUM_COLLISIONS 5
 
@@ -50,11 +52,6 @@ static FILE *safe_open(char *filename, const char *mode);
 
 /* Returns a type struct depending on type */
 Type get_type(char type);
-
-/* Official implementations of string functions */
-bool off_eq(char *str1, char *str2);
-char *off_copy(char *str);
-void off_print(FILE *file, char *str);
 
 /* Print usage message and exit */
 static void usage_exit(char *bin) {
@@ -158,7 +155,9 @@ static Options load_options(int argc, char *argv[]) {
 int main(int argc, char *argv[]) {
     Options opts = load_options(argc, argv);
 
-    int size = determine_size(opts.size);
+    int size = opts.type == 'o'
+        ? official_size(opts.size)
+        : determine_size(opts.size);
     HT ht = create_table(opts, size);
 
     /* Seed the random number generator */
@@ -181,47 +180,6 @@ int main(int argc, char *argv[]) {
         hash_print(ht, stdout);
 
     return 0;
-}
-
-/* Returns whether str1 is equal to str2 */
-bool off_eq(char *str1, char *str2) {
-    return !strcmp(str1, str2);
-}
-
-/* Returns a copy of src */
-char *off_copy(char *src) {
-    /* Remove the newline as required */
-    src[strcspn(src, "\n")] = '\0';
-    /* Malloc enough space for the null byte */
-    char *dest = malloc(sizeof(*dest) * strlen(src) + 1);
-    assert(dest);
-    return strcpy(dest, src);
-}
-
-/* Prints str to file */
-void off_print(FILE *file, char *str) {
-    fprintf(file, " %s", str);
-}
-
-/* Returns a type struct depending on type */
-Type get_type(char type) {
-    switch (type) {
-        case 'o': return (Type) {
-            .eq = (Eq) off_eq,
-            .parse = (Parse) off_copy,
-            .print = (Print) off_print
-        };
-        case 's': return (Type) {
-            .eq = (Eq) str_eq,
-            .parse = (Parse) str_copy,
-            .print = (Print) str_print
-        };
-        default: return (Type) {
-            .eq = (Eq) int_eq,
-            .parse = (Parse) atoi,
-            .print = (Print) int_print 
-        };
-    }
 }
 
 /* Create the hash table from the program options */
@@ -266,3 +224,25 @@ static FILE *safe_open(char *filename, const char *mode) {
         exit(EXIT_FAILURE);
     }
 }
+
+/* Returns a type struct depending on type */
+Type get_type(char type) {
+    switch (type) {
+        case 'o': return (Type) {
+            .eq = (Eq) off_eq,
+            .parse = (Parse) off_copy,
+            .print = (Print) off_print,
+        };
+        case 's': return (Type) {
+            .eq = (Eq) str_eq,
+            .parse = (Parse) str_copy,
+            .print = (Print) str_print,
+        };
+        default: return (Type) {
+            .eq = (Eq) int_eq,
+            .parse = (Parse) atoi,
+            .print = (Print) int_print,
+        };
+    }
+}
+

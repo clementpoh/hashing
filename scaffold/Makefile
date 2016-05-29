@@ -26,7 +26,7 @@ CFLAGS  = -Wall -Wextra -Wpedantic -ansi -std=c99 -m32 -O0 -g # -pg
 LIB		= -lm
 
 # Define the source, header and object files
-HDR		= array.h list.h hashtable.h hash.h types.h extra.h
+HDR		= array.h list.h hashtable.h hash.h types.h extra.h official.h
 SRC		= $(HDR:.h=.c)
 OBJ     = $(SRC:.c=.o)
 

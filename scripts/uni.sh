@@ -2,8 +2,6 @@
 #
 # Clement Poh
 #
-# Verifies that the verify function works correctly
-#
 SCRIPTS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 TIMEOUT="$SCRIPTS/timeout.sh"
 
@@ -20,14 +18,14 @@ exit_codes()  {
     local EXIT=$1
 
     case "$EXIT" in
-        0)  if diff -w "$OUTPUT" "$VERIFY" &> /dev/null; then
-                MSG="PASS: $BIN $OPTS $INPUT\n"
+        0)  if diff -w $OUTPUT $VERIFY &> /dev/null; then
+                MSG="PASS $BIN $OPTS $INPUT\n"
                 PASS=$((PASS + 1))
             else
-                MSG="FAIL: $BIN $OPTS $INPUT | diff -w $OUTPUT $VERIFY\n"
+                MSG="FAIL $BIN $OPTS $INPUT | diff -w $OUTPUT $VERIFY\n"
             fi ;;
         1)  # Indicates that program exited with EXIT_FAILURE
-            MSG="$EXIT EXIT_FAILURE $BIN $OPTS $INPUT\n";;
+            MSG="EXIT $BIN $OPTS $INPUT\n";;
         3)  #  failed assertion in MinGW
             MSG="$EXIT $BIN aborted\n";;
         5)  # Seems to indicate segmentation fault in MinGW
@@ -39,11 +37,11 @@ exit_codes()  {
         255) # Exit called incorrectly
             MSG="$EXIT $BIN exit called incorrectly\n";;
         *)  if [ $EXIT -lt 128 ]; then
-                MSG="$EXIT: $BIN $OPTS $INPUT\n"
+                MSG="$EXIT $BIN $OPTS $INPUT\n"
             else
                 # Program killed by signal
                 SIG=$(kill -l $EXIT)
-                MSG="$SIG: $BIN $OPTS $INPUT\n"
+                MSG="$SIG $BIN $OPTS $INPUT\n"
             fi
     esac
 
@@ -72,7 +70,7 @@ if [ -d "$DIR" ]; then
     USER=$(basename "$DIR")
     BIN="$DIR/ass2"
     OUT="$DIR/out"
-    LOGFILE="$OUT/univ.txt"
+    LOGFILE="$OUT/uni.txt"
 
     printf "************************************************\n" > $LOGFILE
     printf "* Testing the function universal_hash()\n" >> $LOGFILE
@@ -89,23 +87,26 @@ if [ -d "$DIR" ]; then
     for INPUT in $INPUTS; do
         BASE=$(basename $INPUT ".in")
         # Location of the output dot file
-        OUTPUT="$OUT/$BASE.univ"
-        # Location of the verification file
-        VERIFY="$TESTS/$BASE.univ"
-
         KEYS="$TESTS/$BASE.keys"
 
-        OPTS="$FLAGS -t o -f $KEYS -h u"
+        # Location of the verification files
+        VERIFIES="$TESTS/$BASE.*.uni"
+        for VERIFY in $VERIFIES; do
+            SEED=$(echo $VERIFY | sed -r "s/.*\.s([0-9]*).*\.uni/\1/g")
+            SIZE=$(echo $VERIFY | sed -r "s/.*\.n([0-9]*).*\.uni/\1/g")
+            OUTPUT="$OUT/$BASE.n$SIZE.s$SEED.uni"
 
-        # Braces are for errors that originate from the shell
-        { $TIMEOUT $BIN $OPTS $INPUT > $OUTPUT 2> $ERRORS; } &> $SHELL
+            OPTS="$FLAGS -s $SEED -n $SIZE -t o -f $KEYS -h u"
 
-        exit_codes $? $BIN $OPTS $INPUT
+            # Braces are for errors that originate from the shell
+            { $TIMEOUT $BIN $OPTS $INPUT > $OUTPUT 2> $ERRORS; } &> $SHELL
 
-        COUNT=$((COUNT + 1))
+            exit_codes $?
+
+            COUNT=$((COUNT + 1))
+        done
     done
     printf "\n$PASS/$COUNT successful\n" >> $LOGFILE
 fi
 
-# The $((expr)) works like in C, so negate it to get the correct exit status
-exit $((! ($PASS == $COUNT)))
+exit $((!($PASS == $COUNT)))

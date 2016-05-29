@@ -2,8 +2,6 @@
 #
 # Clement Poh
 #
-# Verifies that the verify function works correctly
-#
 SCRIPTS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 TIMEOUT="$SCRIPTS/timeout.sh"
 
@@ -21,10 +19,10 @@ exit_codes()  {
 
     case "$EXIT" in
         0)  # Program passed test case
-            MSG="PASS: $BIN $OPTS $INPUT\n"
+            MSG="PASS $BIN $OPTS $INPUT\n"
             PASS=$((PASS + 1)) ;;
         1)  # Program failed test case
-            MSG="FAIL: $BIN $OPTS $INPUT | $(cat $ERRORS)\n" ;;
+            MSG="FAIL $BIN $OPTS $INPUT | $(cat $ERRORS)\n" ;;
         3)  #  failed assertion in MinGW
             MSG="$EXIT $BIN aborted\n";;
         5)  # Seems to indicate segmentation fault in MinGW
@@ -36,11 +34,11 @@ exit_codes()  {
         255) # Exit called incorrectly
             MSG="$EXIT $BIN exit called incorrectly\n";;
         *)  if [ $EXIT -lt 128 ]; then
-                MSG="$EXIT: $BIN $OPTS $INPUT\n"
+                MSG="$EXIT $BIN $OPTS $INPUT\n"
             else
                 # Program killed by signal
                 SIG=$(kill -l $EXIT)
-                MSG="$SIG: $BIN $OPTS $INPUT\n"
+                MSG="$SIG $BIN $OPTS $INPUT\n"
             fi
     esac
 

@@ -170,8 +170,11 @@ void hash_search_file(HT ht, FILE *file) {
         printf("Looking for:");
         ht->print(stdout, k);
 
-        printf(", starting in %d, %s\n"
-                , ht->hash1(k, ht->size), !v ? "not found" : "found");
+        printf(", %s\n", !v ? "not found" : "found");
+        // printf(", starting in %d, %s\n"
+        //    , ht->hash1(k, ht->size)
+        //    , !v ? "not found" : "found"
+        // );
     }
 }
 

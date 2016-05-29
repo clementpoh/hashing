@@ -2,8 +2,6 @@
 #
 # Clement Poh
 #
-# Verifies that the verify function works correctly
-#
 SCRIPTS="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 TIMEOUT="$SCRIPTS/timeout.sh"
 
@@ -21,10 +19,10 @@ exit_codes()  {
 
     case "$EXIT" in
         0)  if diff -w "$OUTPUT" "$VERIFY" &> /dev/null; then
-                MSG="PASS: $BIN $OPTS $INPUT\n"
+                MSG="PASS $BIN $OPTS $INPUT\n"
                 PASS=$((PASS + 1))
             else
-                MSG="FAIL: $BIN $OPTS $INPUT | diff -w $OUTPUT $VERIFY\n"
+                MSG="FAIL $BIN $OPTS $INPUT | diff -w $OUTPUT $VERIFY\n"
             fi ;;
         1)  # Indicates that program exited with EXIT_FAILURE
             MSG="$EXIT EXIT_FAILURE $BIN $OPTS $INPUT\n";;
@@ -39,11 +37,11 @@ exit_codes()  {
         255) # Exit called incorrectly
             MSG="$EXIT $BIN exit called incorrectly\n";;
         *)  if [ $EXIT -lt 128 ]; then
-                MSG="$EXIT: $BIN $OPTS $INPUT\n"
+                MSG="$EXIT $BIN $OPTS $INPUT\n"
             else
                 # Program killed by signal
                 SIG=$(kill -l $EXIT)
-                MSG="$SIG: $BIN $OPTS $INPUT\n"
+                MSG="$SIG $BIN $OPTS $INPUT\n"
             fi
     esac
 
