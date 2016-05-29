@@ -18,7 +18,7 @@ exit_codes()  {
     local EXIT=$1
 
     case "$EXIT" in
-        0)  if $SCAFFOLD < $OUTPUT 2>> $ERRORS; then
+        0)  if $SCAFFOLD < $OUTPUT 2>> $ERRORS > /dev/null; then
                 MSG="PASS $BIN $OPTS $INPUT\n"
                 PASS=$((PASS + 1))
             else
@@ -96,7 +96,7 @@ if [ -d "$DIR" ]; then
             # Braces are for errors that originate from the shell
             { $TIMEOUT $BIN $OPTS $INPUT > $OUTPUT 2> $ERRORS; } &> $SHELL
 
-            exit_codes $? $BIN $OPTS $INPUT
+            exit_codes $?
 
             COUNT=$((COUNT + 1))
         done

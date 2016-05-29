@@ -18,7 +18,7 @@ exit_codes()  {
     local EXIT=$1
 
     case "$EXIT" in
-        0)  if $SCAFFOLD < $OUTPUT 2>> $ERRORS; then
+        0)  if $SCAFFOLD < $OUTPUT 2>> $ERRORS > /dev/null; then
                 MSG="PASS $BIN $OPTS $INPUT\n"
                 PASS=$((PASS + 1))
             else
