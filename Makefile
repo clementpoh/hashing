@@ -226,5 +226,4 @@ cleantests:
 
 .PHONY: clobber
 clobber: clean cleantests
-	-rm -rf *.log \
-	   	$(SUBDIR)/**/out
+	-rm -rf *.log $(SUBDIR)/**/out $(SUBDIR)/**/summary.txt
