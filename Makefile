@@ -5,6 +5,8 @@
 # Makefile to test COMP20007 2016 Assignment 2 submissions
 #
 
+STUDENT = subs/soln
+
 # Subdirectories
 SOLNDIR	= soln
 SUBDIR	= subs
@@ -66,14 +68,23 @@ in		= $(shell echo $(1) | sed -r "s/(.*)\..*\..*\.uni/\1/g").in
 
 # Rules
 
-.PHONY: all compile strio streq size probe
+.PHONY: all complete compile strio streq size probe
 all: $(SOLNDIR) $(TESTDIR)
+	@echo -e "Usage:"
+	@echo -e "make summaries:\ttest each untested submission"
+	@echo -e "make complete:\ttest all submissions from scratch"
+	@echo -e "make student:\ttest STUDENT, now: $(STUDENT)"
+	@echo -e "make subs/dir:\ttest subs/dir"
 
+.PHONY: student
+student: $(STUDENT)/summary.txt
 
 spec.pdf: spec.tex
 	pdflatex spec.tex && rm spec.log spec.aux
 
 # Rules to run tests on all submissions
+complete: compile.log strio.log streq.log size.log \
+   	probe.log bad.log uni.log dumb.log clever.log
 
 .PHONY: $(SOLNDIR)
 $(SOLNDIR): $(SOLN)
@@ -138,6 +149,10 @@ $(TESTDIR)/%.eq: $(TESTDIR)/%.in $(SOLN) Makefile
 $(HASHUNI): $(TESTDIR)/int.in $(TESTDIR)/str.in $(SOLN) Makefile
 	$(SOLN) -t s -f $(call keys,$@) -s $(call seed,$@) -h u $(call in,$@) -n $(call size,$@) > $@
 
+# Rule for untested submissions
+.PHONY: summaries
+summaries: $(STUDSUMMARY)
+
 # Rules for an individual submission
 .PHONY: $(SUBDIR) $(SUBS)
 $(SUBDIR): $(SUBS)
@@ -171,7 +186,7 @@ $(STUDDUMB): %/out/dumb.txt : %/ass2 $(DUMB)
 	-$(DUMB) $(subst /out,,$(@D))
 
 $(STUDCLEVER): %/out/clever.txt : %/ass2 $(CLEVER)
-	-$(clever) $(subst /out,,$(@D))
+	-$(CLEVER) $(subst /out,,$(@D))
 
 $(STUDSUMMARY): %/summary.txt : %/ass2 \
    	%/out/strio.txt %/out/streq.txt %/out/size.txt %/out/probe.txt \
@@ -199,6 +214,7 @@ clean:
 	   	$(SUBDIR)/**/*.h \
 		$(SUBDIR)/**/list.c \
 		$(SUBDIR)/**/hashtable.c \
+		$(SUBDIR)/**/official.c \
 		$(SUBDIR)/**/array.c \
 		$(SUBDIR)/**/main.c \
 		$(SUBDIR)/**/scaffold.c \
