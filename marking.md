@@ -43,16 +43,16 @@ Mark | Condition
 1    | Passes test, i.e. the function `linear_probe()` returns 1.
 0    | Fails test.
 
-Part C: Bad hash (1 mark)
--------------------------
+Part C: `bad_hash()` (1 mark)
+----------------------------
 
 Mark | Condition
 ---- | ---------------------------------------------------------------------
 1    | Passes test.
 0    | Fails test.
 
-D: Universal Hash (2 marks)
----------------------------
+D: `universal_hash()` (2 marks)
+-------------------------------
 
 The automated test treats `universal_hash()` as a black box, it mainly tests
 the consistency of hash function by inserting values into a hash table then
@@ -81,8 +81,8 @@ Mark | Condition
 0.5  | Inconsistent: Reinitialises coefficients on subsequent calls.
 0    | Failed all.
 
-E & F: Collisions (4 marks each)
---------------------------------
+E & F: Collisions (4 marks, 2 marks each)
+-----------------------------------------
 
 The functions `collide_dumb()` and `collide_clever()` are functionally
 identical. Each are worth 2 marks. Only deduct marks once for entries marked
@@ -135,12 +135,12 @@ length 8 as determined by `strlen()`.
     total strings: 5, coefficients: 5
     hashed to zero - replica: 0 student: 5, official: 5
 
-### Guide Scheme ###
+### Marking guide ###
 
 Mark | Condition
 ---- | -------------------------------------------------------------------
 2    | Submission passes all test cases and makes no mistakes below.
--0.5 | Submission does not follow output specification, e.g. `hash.orig.c`.
+-0.5 | Does not follow output specification, e.g. `hash.orig.c` exists.
 -0.5 | Any printed coefficients are larger than size.
 -0.5 | `FPE`: Floating point error, or arithmetic error.
 -0.5 | Prints out more or less than `n` (5 for testing) strings.
