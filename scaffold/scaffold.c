@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
         switch (c) {
             case 'b': // Test bad hash
                 return test_bad(SEED, MAXSTRLEN);
-            case 'c': // Test collissions
+            case 'c': // Test collisions
                 size = official_size(atoi(optarg));
                 seed = atoi(argv[optind]);
                 // n = atoi(argv[optind + 1]);

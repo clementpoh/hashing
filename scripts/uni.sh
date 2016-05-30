@@ -22,7 +22,7 @@ exit_codes()  {
                 MSG="PASS $BIN $OPTS $INPUT\n"
                 PASS=$((PASS + 1))
             else
-                MSG="FAIL $BIN $OPTS $INPUT | diff -w $OUTPUT $VERIFY\n"
+                MSG="FAIL $BIN $OPTS $INPUT | diff -w $VERIFY -\n"
             fi ;;
         1)  # Indicates that program exited with EXIT_FAILURE
             MSG="EXIT $BIN $OPTS $INPUT\n";;
@@ -47,6 +47,7 @@ exit_codes()  {
 
     printf "$MSG"
     printf "$MSG" >> $LOGFILE
+    printf "    diff -w $VERIFY $OUTPUT\n" >> $LOGFILE
 
     # Append shell errors if they exist
     if [ -s $SHELL ]; then

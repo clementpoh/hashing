@@ -80,8 +80,7 @@ if [ -d "$DIR" ]; then
         exit 127
     fi
 
-    INPUTS="0 8 32 4096"
-    for INPUT in $INPUTS; do
+    for INPUT in 7 47 103 4096; do
         OPTS="$FLAGS -s"
 
         # Braces are for errors that originate from the shell

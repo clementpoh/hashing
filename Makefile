@@ -84,7 +84,7 @@ spec.pdf: spec.tex
 
 # Rules to run tests on all submissions
 complete: compile.log strio.log streq.log size.log \
-   	probe.log bad.log uni.log dumb.log clever.log
+   	probe.log bad.log uni.log dumb.log clever.log $(STUDSUMMARY)
 
 .PHONY: $(SOLNDIR)
 $(SOLNDIR): $(SOLN)

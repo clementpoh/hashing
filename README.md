@@ -145,8 +145,8 @@ differs to the `main.c` provided to the students as skeleton code.
 +   There is a new option `-g n` where n is the number of collisions
     `collide_dumb()` and `collide_clever()` need to generate.
 
-There is also a new executable `scaffold` that calls student implemented
-functions by calling them directly.
+There is also an executable `scaffold` that calls student implemented functions
+by calling them directly.
 
 Directory structure
 -------------------
