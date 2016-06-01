@@ -173,21 +173,23 @@ notation, write the complexity of insert and search in terms of `size` and `n`. 
 Mark | Condition
 ---- | ---------------------------------------------------------------------
 1    | Both O(n).
+1    | Insert O(1) if prepend is specified, O(n) search.
 0.5  | One O(n).
 0    | Otherwise.
 
 Q2 (1 mark)
 -----------
 
-Suppose the hash function spreads the input perfectly evenly over all the buckets. Using big-O notation, write the complexity of insert and search in terms of `size` and `n`. Justify your answer.
+Suppose the hash function spreads the input perfectly evenly over all the
+buckets. Using big-O notation, write the complexity of insert and search in
+terms of `size` and `n`. Justify your answer.
 
 Mark | Condition
 ---- | ---------------------------------------------------------------------
 1    | Both O(n / size).
+1    | Insert O(1) if prepend is specified, O(n/size) search.
 0.5  | One O(n / size).
 0    | Otherwise.
-
-**VT**: In a sense it’s because “in the order they arrive” is ambiguous wrt the append/prepend distinction.  I say mark according to what the student has implemented: if they really have written an O(1) insert operation, then that’s the correct answer; if they’ve implemented a O(n/size) one, then that’s correct.
 
 Q3 (1 mark)
 -----------
@@ -209,24 +211,30 @@ Why is this a bad hash function? Give some example input on which the hash table
 ### 1 mark ###
 
 +    If `a` was generated differently for each call to the function, then it
-doesn't even hash the same thing to the same place, so it clearly doesn't work.
+     doesn't even hash the same thing to the same place, so it clearly doesn't
+     work.
 
-+    If `a` remains static (so at least it's a real hash function), it's still bad because any two strings with the same first character will hash to the same place.
++    If `a` remains static (so at least it's a real hash function), it's still
+     bad because any two strings with the same first character will hash to the
+     same place.
 
 Q5 (3 marks)
 ------------
 
 Average-case analysis. Assume that `r0`, `r1`, . . . are chosen randomly and
-independently of the list of inputs. Using big-O notation, write the expected complexity of insert and search in terms of size and n. Justify your answer.
+independently of the list of inputs. Using big-O notation, write the expected
+complexity of insert and search in terms of size and n. Justify your answer.
 
 ### 3 marks ###
 
 O(n/size). For full marks, I expect some version of the argument in Dasgupta
 that the probability of two items colliding is 1/n. (Strictly speaking, this
-doesn't prove that the probability of n/size colliding is small, but we'll let that go.) Full marks for a specific reference to the collision property
+doesn't prove that the probability of n/size colliding is small, but we'll let
+that go.) Full marks for a specific reference to the collision property
 mentioned on p.37 of Dasgupta, even if the argument is not reiterated.
 
-If they make it clear that they understand that universal hashing implies an even distribution over buckets, then they can have full (3) marks.
+If they make it clear that they understand that universal hashing implies an
+even distribution over buckets, then they can have full (3) marks.
 
 ### 2 marks ###
 
@@ -234,10 +242,7 @@ O(n/size) and arguing that each individual element has probability 1/n of
 hashing to any particular i, without noticing that it's the collision
 probability that matters.
 
-#### Samples ####
-
-
-Also, as you've doubtless noticed, O(1) is an OK answer for insertion (assuming prepending) but not for search. Specific examples below:
+#### Sample answers ####
 
 Student 1:
 
@@ -284,7 +289,7 @@ Student 3:
     pseudo-randomness to where each value will be hashed. It can be assumed
     that each bucket will receive a similar number of elements due to this,
     however it is possible that another element will be hashed to the same
-    value. Therefore, each bucket will have approximately 𝑛size⁄ elements each,
+    value. Therefore, each bucket will have approximately 𝑛/size elements each,
     which suggests Insert and Search times of O(n/size)
 
 **VT**: 3 marks.  Poorly expressed, but successfully mentions universal hashing
@@ -292,9 +297,10 @@ implying that each bucket would receive similar numbers of elements.
 
 Student 4:
 
-    Since, for a universal hash function, the probability of hashing two items to the same bucket
-    is 1/size then there will only by n/size collisions. Since, for every collision, the lookup will
-    increase by O(1) we will have a total insert and search time of O(n/size).
+    Since, for a universal hash function, the probability of hashing two items
+    to the same bucket is 1/size then there will only by n/size collisions.
+    Since, for every collision, the lookup will increase by O(1) we will have a
+    total insert and search time of O(n/size).
 
 **VT**: 2 marks.  1 for getting the answer O(n/size) right.  One more because the
 keywords are present (universal hashing, and collision probabilities).  But the
@@ -310,7 +316,7 @@ Student 5:
     proportional to the average number of items hashed to one hash table
     bucket, the complexity of both the hash functions is proportional to the
     number of items per hash table bucket, which assuming there is a relatively
-    uniform distribution across the hash table , is 𝑛𝑠𝑖𝑧𝑒 on average, resulting
+    uniform distribution across the hash table , is 𝑛/𝑠𝑖𝑧𝑒 on average, resulting
     in complexity of O(𝑛/𝑠𝑖𝑧𝑒) in the general case. However, if size is much
     larger than n (around 2+ times), the average case complexity for search and
     insert is O(1), as most buckets would have 0 or 1 items. (Which is what
@@ -329,7 +335,7 @@ Student 6:
     O(n/size), as each bucket is expected to have n/size elements.
 
 **VT**: 2 marks.  Same as Student 5.  "should be" doesn't cut it.  Also, although
-O(1) is OK for insert with PREpend, this student has written O(1) for hash plus
+O(1) is OK for insert with prepend, this student has written O(1) for hash plus
 append.  Sigh.
 
 Everything else gets 0.
@@ -338,7 +344,9 @@ Everything else gets 0.
 Q6 (1 mark)
 -----------
 
-Explain briefly (in a few sentences) how your algorithm works. Using big-O notation, write the expected running time of your algorithm, for generating 2 hashes to 0 in a table of size size.
+Explain briefly (in a few sentences) how your algorithm works. Using big-O
+notation, write the expected running time of your algorithm, for generating 2
+hashes to 0 in a table of size size.
 
 
 Most people should have a O(size) algorithm. Full marks for a sensible
@@ -347,7 +355,10 @@ explanation of how it works.
 Q7 (2 marks)
 ------------
 
-Explain briefly (about half a page) how your algorithm works. Using big-O notation, write the expected complexity of your algorithm in terms of size. Justify your answer. You can assume that integer operations (like + and *) take a constant amount of time.
+Explain briefly (about half a page) how your algorithm works. Using big-O
+notation, write the expected complexity of your algorithm in terms of size.
+Justify your answer. You can assume that integer operations (like + and *) take
+a constant amount of time.
 
 
 The answer I was expecting was to use extended Euclid as described in my *LMS*
