@@ -82,6 +82,9 @@ student: $(STUDENT)/summary.txt
 spec.pdf: spec.tex
 	pdflatex spec.tex && rm spec.log spec.aux
 
+spec.md: spec.tex
+	pandoc -w markdown_github -o $@ $<
+
 # Rules to run tests on all submissions
 complete: compile.log strio.log streq.log size.log \
    	probe.log bad.log uni.log dumb.log clever.log $(STUDSUMMARY)
@@ -207,7 +210,7 @@ $(STUDSUMMARY): %/summary.txt : %/ass2 \
 clean:
 	$(MAKE) -C $(SOLNDIR) clobber
 	$(MAKE) -C $(SCAFDIR) clobber
-	-rm -rf spec.pdf \
+	-rm -rf spec.pdf spec.md\
 		$(SUBDIR)/**/ass2 \
 		$(SUBDIR)/**/scaffold \
 		$(SUBDIR)/**/*.exe \
