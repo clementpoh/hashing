@@ -51,18 +51,18 @@ Working with strings
 
 The Workshop exercise required the keys to be `int`s. We’ve recreated the hash table to work with generic pointers, but provided interfaces to work with `int`s. The purpose of this assignment is to explore the universal families of hash functions from Dasgupta 1.5.2.
 
-\[**A. Data type:\] The functions `int_eq()`, `int_print()`, and the standard library function `atoi` enable the hash table to work with `int`s, by treating the pointers as `int`s.**
+<span>**A. Data type:**</span> The functions `int_eq()`, `int_print()`, and the standard library function `atoi` enable the hash table to work with `int`s, by treating the pointers as `int`s.
 
 Implement the functions `str_eq()`, `str_copy()`, and `str_print()` in `types.c` to enable the hash table to work with strings by treating the input generic pointers as `char *`.
 
-\[**B. Code size:\] The existing code simply makes the hash table the same size as the command-line argument “size”. Now assume that the command-line input is the maximum expected number of elements, implement `determine_size()` in `extra.c` to choose a hash table `size` equal to the next prime after `2*size`. If you like, you can reuse the code at `http://people.eng.unimelb.edu.au/ammoffat/ppsaa/c/isprime.c`, with proper attribution of course.**
+<span>**B. Code size:**</span> The existing code simply makes the hash table the same size as the command-line argument “size”. Now assume that the command-line input is the maximum expected number of elements, implement `determine_size()` in `extra.c` to choose a hash table `size` equal to the next prime after `2*size`. If you like, you can reuse the code at `http://people.eng.unimelb.edu.au/ammoffat/ppsaa/c/isprime.c`, with proper attribution of course.
 
 Linear probing with double hashing
 ==================================
 
 The rest of the assignment assumes the hash table uses separate chaining with linked lists, but *this question only* considers linear probing. (The workshop contrasted open addressing with double hashing approach against the separate chaining collision resolution methods.)
 
-\[**C. Linear probing:\] The hash table of the assignment also implements double hashing. Implement the function `linear_probing` in `hash.c` so when it’s used as the second hash function of a double hashing hash table it performs linear probing as its collision resolution method.**
+<span>**C. Linear probing:**</span> The hash table of the assignment also implements double hashing. Implement the function `linear_probing` in `hash.c` so when it’s used as the second hash function of a double hashing hash table it performs linear probing as its collision resolution method.
 
 Using randomness from the C standard library
 ============================================
