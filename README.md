@@ -114,7 +114,7 @@ Tip: To generate random values in the range {0, 1, …`size` − 1}, use
 
 1.  <span>**Average-case analysis**</span> Assume that *r*<sub>0</sub>, *r*<sub>1</sub>, … are chosen randomly and independently of the list of inputs. Using big-O notation, write the *expected* complexity of insert and search in terms of `size` and *n*. Justify your answer.
 
-\[**F. Generating collisions by trial and error:\] Suppose you’re a malicious annoyance who wants to slow down the hash table to make other users’ lives difficult. Suppose also that the *r*<sub>*i*</sub> values for universal-hash are made public. Write a function `collide_dumb(unsigned int size, unsigned int seed, int n)` that generates *n* strings that `universal_hash()` hashes to 0. For this question, do this the unintelligent way: simply enumerate a lot of strings and keep any that hash to 0, until you have at least *n* of them. The output should be printed to `stdout` one line per string. To avoid suspicion, your list must not repeat any strings, even padded with zeros. You may, of course, call `universal-hash`.**
+<span>**F. Generating collisions by trial and error:**</span> Suppose you’re a malicious annoyance who wants to slow down the hash table to make other users’ lives difficult. Suppose also that the *r*<sub>*i*</sub> values for universal-hash are made public. Write a function `collide_dumb(unsigned int size, unsigned int seed, int n)` that generates *n* strings that `universal_hash()` hashes to 0. For this question, do this the unintelligent way: simply enumerate a lot of strings and keep any that hash to 0, until you have at least *n* of them. The output should be printed to `stdout` one line per string. To avoid suspicion, your list must not repeat any strings, even padded with zeros. You may, of course, call `universal-hash`.
 
 <span>**NEW:** </span> Output format: write your output to `sdtout.` It should contain:
 
@@ -126,7 +126,7 @@ Tip: To generate random values in the range {0, 1, …`size` − 1}, use
 
 1.  Explain briefly (in a few sentences) how your algorithm works. Using big-O notation, write the expected running time of your algorithm, for generating 2 hashes to 0 in a table of size `size`.
 
-\[**G. Generating collisions by clever maths:\] Look at the extended Euclid algorithm on p.21 of Dasgupta <span>*et al.*</span> Write a new function `collide_clever(unsigned int size, unsigned int seed, int n)` that achieves the same thing as `collide_dumb()`, but more efficiently. ~~For full credit, your strings must have only ASCII alphanumeric characters.~~**
+<span>**G. Generating collisions by clever maths:**</span> Look at the extended Euclid algorithm on p.21 of Dasgupta <span>*et al.*</span> Write a new function `collide_clever(unsigned int size, unsigned int seed, int n)` that achieves the same thing as `collide_dumb()`, but more efficiently. ~~For full credit, your strings must have only ASCII alphanumeric characters.~~
 
 Note: your function need not necessarily work for large values of *n*. Full marks as long as it works for at least *n* = 2 and fails gracefully if *n* is too large.
 
