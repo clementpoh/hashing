@@ -11,7 +11,7 @@ Compatibility
 -------------
 
 The scripts and non-student source files were designed for Unix platforms. They
-were written, tested and executed in _Arch Linux_; however, they should work
+were written, tested and executed in _Linux_; however, they should work
 without difficulty on other Linux distributions.
 
 The scripts were also run and tested on _MinGW_, working with slight
